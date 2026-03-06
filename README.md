@@ -1,73 +1,138 @@
-# React + TypeScript + Vite
+# 🧩 AlgoTrainer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AlgoTrainer es una aplicación web diseñada para **speedcubers** que
+desean practicar y mejorar su conocimiento de algoritmos del cubo de
+Rubik.
 
-Currently, two official plugins are available:
+La plataforma permite entrenar distintos **sets de algoritmos**,
+practicar el **reconocimiento de casos** y mejorar la **ejecución de
+algoritmos** mediante sesiones de práctica rápidas y continuas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+El objetivo del proyecto es ofrecer una herramienta simple y eficiente
+para entrenar algoritmos, similar a los sistemas de práctica utilizados
+por speedcubers avanzados.
 
-## React Compiler
+------------------------------------------------------------------------
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# 🚀 Características
 
-## Expanding the ESLint configuration
+La aplicación incluye las siguientes funciones principales:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+-   Generación de **casos aleatorios**
+-   Visualización del **scramble** que genera ese caso
+-   Visualización del **algoritmo correspondiente**
+-   Botón **Next Case** para cambiar rápidamente al siguiente caso
+-   Opción para **ocultar el algoritmo** y practicar reconocimiento
+-   Sistema de **práctica continua**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Estas herramientas permiten entrenar algoritmos de manera eficiente y
+enfocada.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+------------------------------------------------------------------------
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+# 📚 Sets de algoritmos incluidos
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+AlgoTrainer permitirá practicar diferentes conjuntos de algoritmos del
+cubo 3x3:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+-   **Winter Variation (WV)**
+-   **Magic Wondeful (casos F2L)**
+-   **OLL (Orientation of the Last Layer)**
+-   **PLL (Permutation of the Last Layer)**
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+------------------------------------------------------------------------
+
+# 🛠 Tecnologías utilizadas
+
+El proyecto está construido con tecnologías modernas de desarrollo web:
+
+-   React
+-   Vite
+-   JavaScript
+-   cubing.js (para visualización del cubo 3D)
+
+Estas tecnologías permiten crear una aplicación rápida, modular y fácil
+de mantener.
+
+------------------------------------------------------------------------
+
+# 📁 Estructura del proyecto
+
+Estructura recomendada del proyecto:
+
+    src
+    │
+    ├── components
+    │   ├── CaseViewer.jsx
+    │   ├── ScrambleBox.jsx
+    │   └── AlgoBox.jsx
+    │
+    ├── pages
+    │   ├── Home.jsx
+    │   └── Trainer.jsx
+    │
+    ├── data
+    │   ├── wv.js
+    │   ├── oll.js
+    │   └── pll.js
+    │
+    ├── App.jsx
+    └── main.jsx
+
+Cada carpeta tiene un propósito específico:
+
+-   **components** → Componentes reutilizables de la interfaz
+-   **pages** → Páginas principales de la aplicación
+-   **data** → Algoritmos y datos de entrenamiento
+-   **App.jsx** → Configuración principal de la aplicación
+-   **main.jsx** → Punto de entrada del proyecto
+
+------------------------------------------------------------------------
+
+# 🎯 Funcionamiento del Trainer
+
+La página de entrenamiento mostrará información como:
+
+    Case: WV 12
+
+    Scramble:
+    R U R' U' F2 ...
+
+    Algoritmo:
+    R U R' U R U2 R'
+
+    [ Next Case ]
+
+Cada vez que el usuario presione **Next Case**, la aplicación generará
+un nuevo caso aleatorio para continuar la práctica.
+
+------------------------------------------------------------------------
+
+# 🔮 Mejoras futuras
+
+En futuras versiones se podrían añadir nuevas funciones como:
+
+-   Generador de **scrambles específicos**
+-   **Modo examen**
+-   **Modo reconocimiento**
+-   **Estadísticas de entrenamiento**
+-   **Cubo 3D interactivo**
+
+Soporte para más sets de algoritmos:
+
+-   ZBLL
+-   CLL
+-   COLL
+-   F2L avanzado
+
+------------------------------------------------------------------------
+
+# 🎯 Objetivo del proyecto
+
+El objetivo de AlgoTrainer es proporcionar una herramienta práctica para
+que los **speedcubers** puedan entrenar algoritmos de manera organizada,
+rápida y eficiente.
+
+La aplicación busca mejorar tanto el **reconocimiento de casos** como la
+**ejecución de algoritmos**, dos habilidades fundamentales para mejorar
+tiempos en el cubo de Rubik.

@@ -1,12 +1,15 @@
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Trainer from "./pages/Trainer";
+
 
 function App() {
-
-
   return (
-    <>
-<h1>Esto es algoTriner</h1>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/trainer" element={<Trainer />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
