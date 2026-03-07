@@ -1,10 +1,13 @@
+import AlgorithmSection from "../Components/Home/AlgorithmSection";
+import Hero from "../Components/Home/Hero";
 
 const Home = () => {
   return (
-    <div>
-      
-    </div>
-  )
-}
+    <main className="">
+      <Hero />
+      <AlgorithmSection />
+    </main>
+  );
+};
 
-export default Home
+export default Home;
