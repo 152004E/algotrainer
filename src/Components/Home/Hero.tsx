@@ -1,10 +1,10 @@
-import cubeHero from "../../../public/Rubik's_cube.svg";
+import cubeHero from "../../assets/Rubik's_cube.svg";
 import { Button } from "../GlobalComponents/Button";
 import { faChartLine, faScroll } from "@fortawesome/free-solid-svg-icons";
 
 const Hero = () => {
   return (
-    <section className="relative py-10 overflow-hidden bg-white dark:bg-slate-900">
+    <section className="relative py-20 overflow-hidden  ">
       
       {/* Background blur */}
       <div className="absolute inset-0 z-0 overflow-hidden">

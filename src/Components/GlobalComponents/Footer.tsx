@@ -2,11 +2,26 @@ import { faDiscord, faGithub, faInstagram, faYoutube } from "@fortawesome/free-b
 import { faCube } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
+import fondoImg from "../../assets/fongoImg.png"
+
 const Footer = () => {
   return (
-    <footer className="bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 mt-20">
+    <footer className="relative bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 overflow-hidden">
 
-      <div className="max-w-7xl mx-auto px-6 py-16">
+      {/* Decorative background images */}
+      <img
+        src={fondoImg}
+        alt=""
+        className="absolute left-0 top-0 w-80 opacity-10 -rotate-12 pointer-events-none select-none"
+      />
+
+      <img
+        src={fondoImg}
+        alt=""
+        className="absolute right-0 bottom-0 w-80 opacity-10 rotate-12 pointer-events-none select-none"
+      />
+
+      <div className="max-w-7xl mx-auto px-6 py-16 relative z-10">
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
@@ -91,9 +106,11 @@ const Footer = () => {
             <span className="hover:text-blue-500 cursor-pointer">
               Privacidad
             </span>
+
             <span className="hover:text-blue-500 cursor-pointer">
               Términos
             </span>
+
             <span className="hover:text-blue-500 cursor-pointer">
               Contacto
             </span>

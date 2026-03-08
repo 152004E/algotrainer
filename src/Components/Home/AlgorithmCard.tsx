@@ -11,7 +11,7 @@ type Props = {
 
 const AlgorithmCard = ({ title, description, cases, icon }: Props) => {
   return (
-    <div className="group flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-500/40 transition-all hover:shadow-xl hover:-translate-y-1">
+    <div className="group flex flex-col bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-500/40 duration-500 cursor-pointer transition-all  hover:shadow-xl hover:-translate-y-1">
 
       {/* Icon */}
       <div className="w-16 h-16 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:bg-blue-500 group-hover:text-white transition-colors">
