@@ -3,7 +3,11 @@ import { ThemeToggle } from "./ThemeToggle";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCube } from "@fortawesome/free-solid-svg-icons";
 
-const Navbar = () => {
+interface NavbarProps {
+  onOpenTrainerModal?: () => void;
+}
+
+const Navbar = ({ onOpenTrainerModal }: NavbarProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-transparent border-slate-200 dark:border-slate-800 dark:bg-blue-500/70 dark:backdrop-blur-md     backdrop-blur-md transition-all duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-transparent!">
@@ -13,9 +17,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <div className="flex items-center justify-center text-2xl rounded bg-primary text-white">
               <FontAwesomeIcon icon={faCube}  className="text-black dark:text-white"/>
-
             </div>
-
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               AlgoTrainer
             </span>
@@ -23,12 +25,14 @@ const Navbar = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8 transition-all duration-500">
-            <Link
-              to="/trainer"
-              className="text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors  duration-500"
+            <button
+              type="button"
+              onClick={onOpenTrainerModal}
+              className="text-[15px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors  duration-500 bg-transparent border-none outline-none cursor-pointer"
+              style={{ background: "none" }}
             >
               Trainer
-            </Link>
+            </button>
 
             <Link
               to="/algorithms"
