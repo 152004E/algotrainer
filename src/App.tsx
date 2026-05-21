@@ -1,10 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./Pages/Home";
+import Home from "./pages/Home";
 import MainLayout from "./Layouts/MainLayout";
 import TrainerLayout from "./Layouts/TrainerLayout";
-import MWTrainer from "./Pages/trainer/MWTrainer";
-import OLLTrainer from "./Pages/trainer/OLLTrainer";
-import PLLTrainer from "./Pages/trainer/PLLTrainer";
+import MWTrainer from "./pages/trainer/MWTrainer";
+import OLLTrainer from "./pages/trainer/OLLTrainer";
+import PLLTrainer from "./pages/trainer/PLLTrainer";
 
 function App() {
   return (

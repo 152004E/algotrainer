@@ -68,16 +68,18 @@ src/
 
 ## Current Route Map
 
-| Route | Component | Status |
-|-------|-----------|--------|
-| `/` | MainLayout → Home | ✓ Working |
-| `/trainer/wv` | TrainerLayout → MWTrainer | ⚠️ BUG: should be WVTrainer |
-| `/trainer/mw` | TrainerLayout → OLLTrainer | ⚠️ BUG: should be MWTrainer |
-| `/trainer/oll` | TrainerLayout → OLLTrainer | ✓ Correct |
-| `/trainer/pll` | TrainerLayout → PLLTrainer | ✓ Correct |
-| `/trainer/f2l` | Not defined | ❌ Missing |
-| `/algorithms` | Not defined | ❌ Missing |
-| `/about` | Not defined | ❌ Missing |
+All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` which allows the application to compile successfully on case-sensitive systems (such as Linux).
+
+| Route | Component File (Target) | Status | Details |
+|-------|--------------------------|--------|---------|
+| `/` | `src/pages/Home.tsx` | ✓ Working | Page renders correctly and build passes. |
+| `/trainer/wv` | `src/pages/trainer/WVTrainer.tsx` | ⚠️ BUG | Incorrectly imports from `MWTrainer.tsx` (which exports the `WVTrainer` component). |
+| `/trainer/mw` | `src/pages/trainer/MWTrainer.tsx` | ⚠️ BUG | Incorrectly maps to the `OLLTrainer` component. |
+| `/trainer/oll` | `src/pages/trainer/OLLTrainer.tsx` | ✓ Working | Renders the OLL trainer view correctly. |
+| `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | Renders the PLL trainer view correctly. |
+| `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ❌ Missing | No route defined in `App.tsx` and the component file is currently empty. |
+| `/algorithms` | Not defined | ❌ Missing | Linked in `Navbar.tsx` but no route or page component exists. |
+| `/about` | Not defined | ❌ Missing | Linked in `Navbar.tsx` but no route or page component exists. |
 
 ## Data Flow
 
