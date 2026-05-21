@@ -2,21 +2,18 @@ import ScrambleBox from "../../Components/trainer/ScrambleBox";
 import CubeViewer from "../../Components/trainer/CubeViewer";
 import AlgorithmBox from "../../Components/trainer/AlgorithmBox";
 import NextCaseButton from "../../Components/trainer/NextCaseButton";
+import { useTrainer } from "../../hooks/useTrainer";
+import PLLCases from "../../data/PLLCases";
 
 export default function PLLTrainer() {
-  const scramble = "R2 U2 R U2 R2 U2 R2 U2 R U2 R2";
-  const algorithm = "(R U R' U') (R' F R2 U') R' U' (R U R' F')";
-
-  const handleNextCase = () => {
-    console.log("next case");
-  };
+  const { currentCase, nextCase, revealed, revealAlgorithm } = useTrainer(PLLCases);
 
   return (
     <>
-      <ScrambleBox scramble={scramble} />
+      <ScrambleBox scramble={currentCase.scramble} />
       <CubeViewer />
-      <AlgorithmBox algorithm={algorithm} />
-      <NextCaseButton onNext={handleNextCase} />
+      <AlgorithmBox algorithm={currentCase.algorithm} revealed={revealed} onReveal={revealAlgorithm} />
+      <NextCaseButton onNext={nextCase} />
     </>
   );
 }

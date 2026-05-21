@@ -2,25 +2,18 @@ import ScrambleBox from "../../Components/trainer/ScrambleBox";
 import CubeViewer from "../../Components/trainer/CubeViewer";
 import AlgorithmBox from "../../Components/trainer/AlgorithmBox";
 import NextCaseButton from "../../Components/trainer/NextCaseButton";
+import { useTrainer } from "../../hooks/useTrainer";
+import MWCases from "../../data/MWCases";
 
-export default function WVTrainer() {
-
-  const scramble = "R U R' U'";
-  const algorithm = "(R U R' U')";
-
-  const handleNextCase = () => {
-    console.log("next case");
-  };
+export default function MWTrainer() {
+  const { currentCase, nextCase, revealed, revealAlgorithm } = useTrainer(MWCases);
 
   return (
     <>
-      <ScrambleBox scramble={scramble} />
-
+      <ScrambleBox scramble={currentCase.scramble} />
       <CubeViewer />
-
-      <AlgorithmBox algorithm={algorithm} />
-
-      <NextCaseButton onNext={handleNextCase} />
+      <AlgorithmBox algorithm={currentCase.algorithm} revealed={revealed} onReveal={revealAlgorithm} />
+      <NextCaseButton onNext={nextCase} />
     </>
   );
 }
