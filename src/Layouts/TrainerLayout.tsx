@@ -34,22 +34,22 @@ export default function TrainerLayout() {
   }, [location]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-background-dark text-slate-900 dark:text-slate-100">
       {/* LEFT SIDEBAR */}
       <TrainerSidebar />
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col relative">
+      <main className="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-background-dark relative">
         {/* TABS */}
         <TrainerTabs />
 
         {/* TRAINER CONTENT */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-3xl w-full flex flex-col items-center gap-8">
-            <Outlet />
-          </div>
+        <div className="max-w-3xl w-full flex flex-col items-center gap-8 mt-16">
+          <Outlet />
         </div>
       </main>
+
+      {/* RIGHT SIDEBAR */}
       <TrainerToolsSidebar />
     </div>
   );

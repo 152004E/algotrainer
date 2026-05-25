@@ -6,15 +6,15 @@ interface Props {
 
 export default function AlgorithmBox({ algorithm, revealed, onReveal }: Props) {
   return (
-    <div className="text-center space-y-4">
-      <div className="text-sm font-bold text-blue-500">
+    <div className="w-full text-center space-y-6">
+      <div className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-bold">
         RECOMMENDED ALGORITHM
       </div>
 
       {revealed ? (
         <div
           id="algo-display"
-          className="text-3xl font-bold font-mono"
+          className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 font-mono"
         >
           {algorithm}
         </div>
@@ -22,7 +22,7 @@ export default function AlgorithmBox({ algorithm, revealed, onReveal }: Props) {
         <button
           data-reveal-algo
           onClick={onReveal}
-          className="px-8 py-4 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-mono text-2xl cursor-pointer"
+          className="w-full px-8 py-4 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-mono text-2xl cursor-pointer transition-colors"
         >
           Click or press SPACE
         </button>

@@ -6,16 +6,16 @@ import Footer from "../Components/GlobalComponents/Footer";
 import TrainerModal from "../Components/Modals/TrainerModal";
 
 const MainLayout = () => {
-  const [isTrainerModalOpen, setTrainerModalOpen] = useState(false);
+  const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
 
   return (
     <>
-      <Navbar onOpenTrainerModal={() => setTrainerModalOpen(true)} />
-      <main className="dark:bg-slate-900">
+      <Navbar onOpenTrainerModal={() => setIsTrainerModalOpen(true)} />
+      <main className="bg-white dark:bg-background-dark">
         <Outlet />
       </main>
       <Footer />
-      <TrainerModal isOpen={isTrainerModalOpen} onClose={() => setTrainerModalOpen(false)} />
+      <TrainerModal isOpen={isTrainerModalOpen} onClose={() => setIsTrainerModalOpen(false)} />
     </>
   );
 };
