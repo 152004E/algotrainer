@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import AlgorithmsHome from "./pages/algorithms/AlgorithmsHome";
 import AlgorithmCategory from "./pages/algorithms/AlgorithmCategory";
 import About from "./pages/About";
+import GeneratePreviews from "./pages/dev/GeneratePreviews";
 import MainLayout from "./Layouts/MainLayout";
 import TrainerLayout from "./Layouts/TrainerLayout";
 import WVTrainer from "./pages/trainer/WVTrainer";
@@ -21,6 +22,9 @@ function App() {
         <Route path="/algorithms/:slug" element={<AlgorithmCategory />} />
         <Route path="/about" element={<About />} />
       </Route>
+
+      {/* DEV TOOLS */}
+      <Route path="/dev/generate" element={<GeneratePreviews />} />
 
       {/* TRAINER */}
       <Route element={<TrainerLayout />}>
