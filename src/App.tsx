@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Algorithms from "./pages/Algorithms";
+import AlgorithmsHome from "./pages/algorithms/AlgorithmsHome";
+import AlgorithmCategory from "./pages/algorithms/AlgorithmCategory";
 import About from "./pages/About";
 import MainLayout from "./Layouts/MainLayout";
 import TrainerLayout from "./Layouts/TrainerLayout";
@@ -16,7 +17,8 @@ function App() {
       {/* WEBSITE */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/algorithms" element={<Algorithms />} />
+        <Route path="/algorithms" element={<AlgorithmsHome />} />
+        <Route path="/algorithms/:slug" element={<AlgorithmCategory />} />
         <Route path="/about" element={<About />} />
       </Route>
 

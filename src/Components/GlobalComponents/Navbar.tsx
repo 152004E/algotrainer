@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCube } from "@fortawesome/free-solid-svg-icons";
+
 
 interface NavbarProps {
   onOpenTrainerModal?: () => void;
@@ -14,14 +13,16 @@ const Navbar = ({ onOpenTrainerModal }: NavbarProps) => {
         <div className="flex h-16 items-center justify-between bg-transparent!">
 
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center text-2xl rounded bg-primary text-white">
-              <FontAwesomeIcon icon={faCube}  className="text-black dark:text-white"/>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="/algoTrainerLogo-removebg-preview.png"
+              alt="AlgoTrainer"
+              className="h-8 w-auto object-contain"
+            />
+            <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
               AlgoTrainer
             </span>
-          </div>
+          </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8 transition-all duration-500">

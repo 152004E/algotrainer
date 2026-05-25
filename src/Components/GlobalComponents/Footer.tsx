@@ -1,5 +1,5 @@
+import { Link } from "react-router-dom"
 import { faDiscord, faGithub, faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons"
-import { faCube } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
 import fondoImg from "../../assets/fongoImg.png"
@@ -27,10 +27,16 @@ const Footer = () => {
 
           {/* Logo / About */}
           <div>
-            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xl font-bold">
-              <FontAwesomeIcon icon={faCube} />
-              AlgoTrainer
-            </div>
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src="/algoTrainerLogo-removebg-preview.png"
+                alt="AlgoTrainer"
+                className="h-10 w-auto object-contain"
+              />
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                AlgoTrainer
+              </span>
+            </Link>
 
             <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm">
               Plataforma para aprender y practicar algoritmos de Rubik's Cube.

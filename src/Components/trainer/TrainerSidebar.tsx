@@ -20,9 +20,11 @@ export default function TrainerSidebar() {
         <img
           src="/algoTrainerLogo-removebg-preview.png"
           alt="AlgoTrainer"
-          className="size-8 object-contain"
+          className="h-8 w-auto object-contain"
         />
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">AlgoTrainer</h2>
+        <span className="text-xl font-bold text-slate-700 dark:text-slate-300">
+          AlgoTrainer
+        </span>
       </Link>
 
       {/* Stats Content */}

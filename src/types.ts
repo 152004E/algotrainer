@@ -6,6 +6,26 @@ export interface AlgoCase {
   scramble: string;
   algorithm: string;
   description?: string;
+  alternatives?: string[];
+  recognition?: string;
+  fingertricks?: string;
+}
+
+export interface AlgorithmCategory {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  gradient: string;
+  lightGradient: string;
+  count: number;
+  filters: FilterOption[];
+}
+
+export interface FilterOption {
+  key: string;
+  label: string;
+  values: string[];
 }
 
 export interface SessionStats {
