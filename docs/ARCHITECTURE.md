@@ -5,6 +5,7 @@
 - **TailwindCSS v4** (via `@tailwindcss/vite`, NOT PostCSS)
 - **React Router v7**
 - **FontAwesome** (react-fontawesome for icons)
+- **cubing.js** (3x3x3 interactive cube in Hero)
 - **No state management** — local state + props only
 
 ## Directory Structure
@@ -15,8 +16,11 @@ src/
 ├── main.tsx                      Entry point with BrowserRouter
 ├── index.css                     Global styles & Tailwind imports
 │
+├── types/
+│   └── cubing.d.ts              JSX type augmentation for <twisty-player>
+│
 ├── assets/
-│   ├── Rubik's_cube.svg         Hero image
+│   ├── Rubik's_cube.svg         [UNUSED - replaced by CubeHero]
 │   └── fongoImg.png             Background pattern
 │
 ├── Layouts/
@@ -40,8 +44,11 @@ src/
 │   │   ├── Button.tsx           Reusable button with FontAwesome
 │   │   └── ThemeToggle.tsx      Dark/light mode
 │   │
+│   ├── cube/
+│   │   └── CubeHero.tsx         Interactive 3D cube via cubing.js <twisty-player>
+│   │
 │   ├── Home/
-│   │   ├── Hero.tsx             Hero section with CTA
+│   │   ├── Hero.tsx             Hero section with CTA (uses CubeHero)
 │   │   ├── AlgorithmSection.tsx Grid of algorithm sets
 │   │   ├── AlgorithmCard.tsx    Card linking to trainer
 │   │   ├── HowItWorks.tsx       3-step process section
@@ -51,7 +58,7 @@ src/
 │   │   ├── TrainerSidebar.tsx   Left sidebar: session stats [PLACEHOLDER]
 │   │   ├── TrainerTabs.tsx      Top tabs: F2L / WV / MW / OLL / PLL [NON-FUNCTIONAL]
 │   │   ├── TrainerToolsSidebar.tsx Right sidebar: help & shortcuts [PLACEHOLDER]
-│   │   ├── CubeViewer.tsx       [PLACEHOLDER - no 3D cube yet]
+│   │   ├── CubeViewer.tsx       [PLACEHOLDER - see CubeHero for cubing.js integration]
 │   │   ├── ScrambleBox.tsx      Displays scramble string
 │   │   ├── AlgorithmBox.tsx     Displays algorithm string
 │   │   └── NextCaseButton.tsx   Next case button
@@ -115,6 +122,7 @@ App
 │  ├─ Navbar
 │  ├─ Home
 │  │  ├─ Hero
+│  │  │  └─ CubeHero (cubing.js <twisty-player>)
 │  │  ├─ AlgorithmSection
 │  │  │  └─ AlgorithmCard[] (6 cards)
 │  │  └─ HowItWorks

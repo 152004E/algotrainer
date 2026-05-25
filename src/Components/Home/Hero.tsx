@@ -1,4 +1,4 @@
-import cubeHero from "../../assets/Rubik's_cube.svg";
+import CubeHero from "../cube/CubeHero";
 import { Button } from "../GlobalComponents/Button";
 import { faChartLine, faScroll } from "@fortawesome/free-solid-svg-icons";
 
@@ -85,11 +85,7 @@ const Hero = () => {
             <div className="relative aspect-square rounded-2xl overflow-hidden 
             bg-slate-100 dark:bg-slate-800 shadow-2xl">
 
-              <img
-                src={cubeHero}
-                alt="Rubik Cube"
-                className="w-full h-full object-contain group-hover:scale-105 transition duration-700 p-6"
-              />
+              <CubeHero />
 
             </div>
 
