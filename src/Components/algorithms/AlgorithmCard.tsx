@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Alg } from "cubing/alg";
 import type { AlgoCase } from "../../types";
 
 interface Props {
@@ -21,6 +22,13 @@ const difficultyLabels: Record<string, string> = {
 const AlgorithmCard = ({ alg, onClick }: Props) => {
   const [imgError, setImgError] = useState(false);
   const imgSrc = `/algorithms/${alg.subset.toLowerCase()}/${alg.id}.png`;
+  const mezcla = useMemo(() => {
+    try {
+      return new Alg(alg.algorithm).invert().toString();
+    } catch {
+      return "";
+    }
+  }, [alg.algorithm]);
 
   return (
     <button
@@ -38,22 +46,30 @@ const AlgorithmCard = ({ alg, onClick }: Props) => {
             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
               {alg.name}
             </h4>
-            <span
-              className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${difficultyStyles[alg.difficulty]}`}
-            >
-              {difficultyLabels[alg.difficulty] ?? alg.difficulty}
-            </span>
+            {alg.corners !== undefined ? (
+              <span className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                {alg.corners} {alg.corners === 1 ? "Esquina" : "Esquinas"}
+              </span>
+            ) : (
+              <span
+                className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${difficultyStyles[alg.difficulty]}`}
+              >
+                {difficultyLabels[alg.difficulty] ?? alg.difficulty}
+              </span>
+            )}
           </div>
 
-          <p className="font-mono text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
-            {alg.algorithm}
-          </p>
-
-          {alg.description && (
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 line-clamp-1">
-              {alg.description}
+          {mezcla && (
+            <p className="font-mono text-[11px] text-slate-400 dark:text-slate-500 truncate mt-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Mezcla</span>{" "}
+              {mezcla}
             </p>
           )}
+
+          <p className="font-mono text-xs text-blue-600 dark:text-blue-400 truncate mt-1">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Solución</span>{" "}
+            {alg.algorithm}
+          </p>
         </div>
 
         <div className="shrink-0 w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden group-hover:ring-2 group-hover:ring-blue-300 dark:group-hover:ring-blue-600 transition-all duration-300">

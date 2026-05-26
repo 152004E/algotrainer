@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
+import { Alg } from "cubing/alg";
 import type { AlgoCase } from "../../types";
 import CubeAlgorithmViewer from "./CubeAlgorithmViewer";
 
@@ -21,6 +22,14 @@ const difficultyLabels: Record<string, string> = {
 
 const AlgorithmModal = ({ alg, onClose }: Props) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  const mezcla = useMemo(() => {
+    try {
+      return new Alg(alg.algorithm).invert().toString();
+    } catch {
+      return "";
+    }
+  }, [alg.algorithm]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -68,13 +77,22 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
         </div>
 
         <div className="p-5 space-y-5">
-          <CubeAlgorithmViewer setupAlg={alg.scramble} solutionAlg={alg.algorithm} />
+          <CubeAlgorithmViewer setupAlg={mezcla} solutionAlg={alg.algorithm} />
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5 block">
-              Algoritmo
+              Mezcla
             </label>
-            <div className="font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 break-all">
+            <div className="font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-600 dark:text-slate-400 break-all">
+              {mezcla}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5 block">
+              Solución
+            </label>
+            <div className="font-mono text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 text-blue-700 dark:text-blue-300 break-all font-semibold">
               {alg.algorithm}
             </div>
           </div>

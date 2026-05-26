@@ -10,6 +10,7 @@ interface Props {
 
 const filterLabels: Record<string, Record<string, string>> = {
   difficulty: { Easy: "Fácil", Medium: "Medio", Hard: "Difícil" },
+  corners: { "3": "3 Esquinas", "2": "2 Esquinas", "1": "1 Esquina", "0": "0 Esquinas" },
 };
 
 const AlgorithmFilter = ({ filters, activeFilters, search, onFilterChange, onSearchChange }: Props) => {

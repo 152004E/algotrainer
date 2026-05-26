@@ -40,13 +40,13 @@ export const algorithmCategories: AlgorithmCategory[] = [
   {
     slug: "wv",
     name: "Winter Variation",
-    description: "Insertar el último par F2L mientras se orienta la última capa",
+    description: "Si la cruz superior está resuelta, Winter Variation inserta el último par mientras resuelve OLL.",
     icon: "❄️",
     gradient: "from-emerald-600 to-emerald-400",
     lightGradient: "from-emerald-50 to-emerald-100",
     count: 27,
     filters: [
-      { key: "difficulty", label: "Dificultad", values: ["Easy", "Medium", "Hard"] },
+      { key: "corners", label: "Esquinas orientadas", values: ["3", "2", "1", "0"] },
     ],
   },
   {

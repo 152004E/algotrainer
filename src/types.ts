@@ -9,6 +9,8 @@ export interface AlgoCase {
   alternatives?: string[];
   recognition?: string;
   fingertricks?: string;
+  corners?: number;
+  shape?: string;
 }
 
 export interface AlgorithmCategory {

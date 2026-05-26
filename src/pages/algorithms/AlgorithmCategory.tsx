@@ -44,6 +44,7 @@ const AlgorithmCategory = () => {
       for (const [key, value] of Object.entries(activeFilters)) {
         if (!value) continue;
         if (key === "difficulty" && c.difficulty !== value) return false;
+        if (key === "corners" && c.corners !== Number(value)) return false;
       }
       return true;
     });
