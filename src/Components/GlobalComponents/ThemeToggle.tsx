@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -18,12 +19,47 @@ export const ThemeToggle = () => {
     }
   }, [darkMode]);
 
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (!document.startViewTransition) {
+      setDarkMode((prev) => !prev);
+      return;
+    }
+
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      flushSync(() => {
+        setDarkMode((prev) => !prev);
+      });
+    });
+
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 700,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
+  };
+
   return (
     <div className="flex items-center justify-between">
-
       <button
-        onClick={() => setDarkMode(!darkMode)}
-        
+        onClick={toggleTheme}
         className={`relative w-14 h-7 flex items-center rounded-full p-1 transition-all duration-300
           ${darkMode ? "bg-blue-700" : "bg-gray-300"}`}
       >

@@ -1,7 +1,7 @@
 {
   "name": "algotrainer",
   "private": true,
-  "packageManager": "pnpm@10",
+  "packageManager": "pnpm@11.2.2",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
