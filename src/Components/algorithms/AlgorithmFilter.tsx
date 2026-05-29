@@ -12,11 +12,11 @@ const filterLabels: Record<string, Record<string, string>> = {
   difficulty: { Easy: "Fácil", Medium: "Medio", Hard: "Difícil" },
   corners: { "3": "3 Esquinas", "2": "2 Esquinas", "1": "1 Esquina", "0": "0 Esquinas" },
   edgeGroup: {
-    all: "Todas las aristas orientadas",
+    all: "Todas las aristas orientadas correctamente",
     l: "Dos aristas orientadas (L)",
     line: "Dos aristas orientadas (Línea)",
-    corners: "Todas las esquinas orientadas",
     none: "Ninguna arista orientada",
+    corners: "Todas las esquinas orientadas",
   },
 };
 
@@ -58,7 +58,7 @@ const AlgorithmFilter = ({ filters, activeFilters, search, onFilterChange, onSea
                   onFilterChange(filter.key, e.target.value);
                   onFilterChange(filter.dependent!.key, "");
                 }}
-                className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
+                className="px-1 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
                   bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
                   focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
                   transition-all"

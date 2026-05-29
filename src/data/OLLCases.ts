@@ -4,6 +4,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-01",
     edgeGroup: "none",
+    shapeGroup: "0",
+    corners: 0,
     name: "OLL 1",
     subset: "OLL",
     difficulty: "Medium",
@@ -18,6 +20,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-02",
     edgeGroup: "none",
+    shapeGroup: "0",
+    corners: 0,
     name: "OLL 2",
     subset: "OLL",
     difficulty: "Easy",
@@ -35,6 +39,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-03",
     edgeGroup: "none",
+    shapeGroup: "1",
+    corners: 1,
     name: "OLL 3",
     subset: "OLL",
     difficulty: "Medium",
@@ -53,6 +59,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-04",
     edgeGroup: "none",
+    shapeGroup: "1",
+    corners: 1,
     name: "OLL 4",
     subset: "OLL",
     difficulty: "Medium",
@@ -161,7 +169,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-11",
-    edgeGroup: "line",
+    edgeGroup: "l",
     shapeGroup: "small-lightning",
     name: "OLL 11",
     subset: "OLL",
@@ -176,7 +184,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-12",
-    edgeGroup: "line",
+    edgeGroup: "l",
     shapeGroup: "small-lightning",
     name: "OLL 12",
     subset: "OLL",
@@ -191,7 +199,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-13",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "knight-shapes",
     name: "OLL 13",
     subset: "OLL",
@@ -209,7 +217,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-14",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "knight-shapes",
     name: "OLL 14",
     subset: "OLL",
@@ -223,7 +231,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-15",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "knight-shapes",
     name: "OLL 15",
     subset: "OLL",
@@ -238,7 +246,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-16",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "knight-shapes",
     name: "OLL 16",
     subset: "OLL",
@@ -253,6 +261,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-17",
     edgeGroup: "none",
+    shapeGroup: "2",
+    corners: 2,
     name: "OLL 17",
     subset: "OLL",
     difficulty: "Medium",
@@ -267,6 +277,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-18",
     edgeGroup: "none",
+    shapeGroup: "2",
+    corners: 2,
     name: "OLL 18",
     subset: "OLL",
     difficulty: "Medium",
@@ -285,6 +297,8 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-19",
     edgeGroup: "none",
+    shapeGroup: "2",
+    corners: 2,
     name: "OLL 19",
     subset: "OLL",
     difficulty: "Medium",
@@ -299,12 +313,14 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-20",
     edgeGroup: "none",
+    shapeGroup: "4",
+    corners: 4,
     name: "OLL 20",
     subset: "OLL",
     difficulty: "Hard",
     scramble: "r' R U R U R' U' r R' M' U R U' r'",
     algorithm: "r' R U R U R' U' r R' M' U R U' r'",
-    description: "Line",
+    description: "Dot",
     aliases: ["X", "Checkers"],
     usedIn: "OLL",
     optimalMoves: "12 HTM",
@@ -436,6 +452,7 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-28",
     edgeGroup: "corners",
+    corners: 4,
     name: "OLL 28",
     subset: "OLL",
     difficulty: "Medium",
@@ -520,7 +537,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-33",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "t-shapes",
     name: "OLL 33",
     subset: "OLL",
@@ -534,7 +551,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-34",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "c-shapes",
     name: "OLL 34",
     subset: "OLL",
@@ -707,7 +724,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-45",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "t-shapes",
     name: "OLL 45",
     subset: "OLL",
@@ -721,7 +738,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-46",
-    edgeGroup: "l",
+    edgeGroup: "line",
     shapeGroup: "c-shapes",
     name: "OLL 46",
     subset: "OLL",
@@ -899,6 +916,7 @@ const OLLCases: AlgoCase[] = [
   {
     id: "oll-57",
     edgeGroup: "corners",
+    corners: 4,
     name: "OLL 57",
     subset: "OLL",
     difficulty: "Hard",
