@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import "cubing/twisty";
 
 interface Props {
@@ -7,15 +7,22 @@ interface Props {
   className?: string;
   height?: string;
   controls?: boolean;
+  onFinish?: () => void;
+}
+
+export interface CubeViewerHandle {
+  play: () => void;
+  jumpToStart: () => void;
 }
 
 const SPEEDS = [0.25, 0.5, 1, 2];
 
-const CubeViewer = ({ alg, scramble, className = "", height = "240px", controls = false }: Props) => {
+const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, className = "", height = "240px", controls = false, onFinish }, ref) => {
   const playerRef = useRef<any>(null);
   const rafRef = useRef<number>(0);
   const tsRef = useRef(0);
   const durRef = useRef(0);
+  const watchFinish = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
@@ -23,41 +30,6 @@ const CubeViewer = ({ alg, scramble, className = "", height = "240px", controls 
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [loop, setLoop] = useState(false);
-
-  // Diagnostic: inspect twisty-player internal state after mount
-  useEffect(() => {
-    const el = playerRef.current;
-    if (!el) return;
-
-    const inspect = async () => {
-      const info: string[] = [];
-      try {
-        const canvases = await el.experimentalCurrentCanvases();
-        info.push(`canvases: ${canvases.length}`);
-        for (let i = 0; i < canvases.length; i++) {
-          const c = canvases[i] as HTMLCanvasElement;
-          info.push(`canvas#${i}: ${c.width}x${c.height}, style=${c.style.width}x${c.style.height}, parent=${c.parentElement?.tagName}`);
-        }
-      } catch (e) {
-        info.push(`canvases err: ${e}`);
-      }
-      try {
-        const strategy = await el.experimentalModel.visualizationStrategy.get();
-        info.push(`strategy: ${strategy}`);
-      } catch (e) {
-        info.push(`strategy err: ${e}`);
-      }
-      try {
-        const puzzleID = await el.experimentalModel.puzzleID.get();
-        info.push(`puzzleID: ${puzzleID}`);
-      } catch (e) {
-        info.push(`puzzleID err: ${e}`);
-      }
-      console.log("[CubeViewer] inspect:", info.join(" | "));
-    };
-
-    setTimeout(inspect, 500);
-  }, []);
 
   const syncTimeline = useCallback(async () => {
     const el = playerRef.current;
@@ -69,10 +41,31 @@ const CubeViewer = ({ alg, scramble, className = "", height = "240px", controls 
       setTimestamp(tsRef.current);
       setAtStart(info.atStart);
       setAtEnd(info.atEnd);
+      if (watchFinish.current && info.atEnd) {
+        watchFinish.current = false;
+        onFinish?.();
+      }
     } catch {
       // not ready yet
     }
-  }, []);
+  }, [onFinish]);
+
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      const el = playerRef.current;
+      if (!el) return;
+      el.controller.animationController.play({ loop });
+      setPlaying(true);
+      watchFinish.current = true;
+    },
+    jumpToStart: () => {
+      const el = playerRef.current;
+      if (!el) return;
+      el.jumpToStart({ flash: true });
+      setPlaying(false);
+      syncTimeline();
+    },
+  }), [loop, syncTimeline]);
 
   const syncDuration = useCallback(async () => {
     const el = playerRef.current;
@@ -330,6 +323,6 @@ const CubeViewer = ({ alg, scramble, className = "", height = "240px", controls 
       )}
     </div>
   );
-};
+});
 
 export default CubeViewer;

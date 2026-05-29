@@ -410,9 +410,9 @@ const OLLCases: AlgoCase[] = [
     usedIn: "OCLL, OLL",
     optimalMoves: "8 HTM",
     alternatives: [
-      "(U') F' r U R' U' r' F R",
-      "(F R B R') (F' R B' R')",
-      "(F l U l') (F' l U' l')",
+      "(U) F' r U R' U' r' F R",
+      "U2 (F R B R') (F' R B' R')",
+      "U2 (F l U l') (F' l U' l')",
     ],
   },
   {
@@ -429,9 +429,9 @@ const OLLCases: AlgoCase[] = [
     usedIn: "OCLL, OLL",
     optimalMoves: "7 HTM",
     alternatives: [
-      "(U2) R' U' R U' R' U2 R",
-      "(U') R U2' R' U' R U' R'",
-      "L' U' L U' L' U2 L",
+      "(U') R' U' R U' R' U2 R",
+      " R U2' R' U' R U' R'",
+      "(U) L' U' L U' L' U2 L",
     ],
   },
   {

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Alg } from "cubing/alg";
 import type { AlgoCase } from "../../types";
-import CubeViewer from "./CubeViewer";
+import CubeViewer, { type CubeViewerHandle } from "./CubeViewer";
 
 interface Props {
   alg: AlgoCase;
@@ -39,6 +39,13 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
   const solutionAlg = useMemo(() => {
     return allAlgs[selectedIdx];
   }, [allAlgs, selectedIdx]);
+
+  const solutionRef = useRef<CubeViewerHandle>(null);
+
+  const handleScrambleFinish = useCallback(() => {
+    solutionRef.current?.jumpToStart();
+    solutionRef.current?.play();
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -104,7 +111,7 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
               Mezcla
             </label>
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-              <CubeViewer alg={setupAlg} />
+              <CubeViewer alg={setupAlg} controls onFinish={handleScrambleFinish} />
             </div>
             <div className="font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-600 dark:text-slate-400 break-all mt-2">
               {setupAlg}
@@ -117,7 +124,7 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
               Solución
             </label>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 overflow-hidden p-1">
-              <CubeViewer scramble={setupAlg} alg={solutionAlg} controls />
+              <CubeViewer ref={solutionRef} scramble={setupAlg} alg={solutionAlg} controls />
             </div>
             <div className="mt-2 space-y-1.5 max-h-[260px] overflow-y-auto">
               {allAlgs.map((algStr, idx) => (
