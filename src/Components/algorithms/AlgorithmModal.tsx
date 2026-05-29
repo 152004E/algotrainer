@@ -28,7 +28,7 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
   );
   const [selectedIdx, setSelectedIdx] = useState(0);
 
-  const mezcla = useMemo(() => {
+  const setupAlg = useMemo(() => {
     try {
       return new Alg(alg.algorithm).invert().toString();
     } catch {
@@ -36,15 +36,9 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
     }
   }, [alg.algorithm]);
 
-  const rightAlg = useMemo(() => {
-    try {
-      const setup = new Alg(alg.algorithm).invert();
-      const solution = new Alg(allAlgs[selectedIdx]);
-      return setup.toString() + " . " + solution.toString();
-    } catch {
-      return allAlgs[selectedIdx];
-    }
-  }, [alg.algorithm, allAlgs, selectedIdx]);
+  const solutionAlg = useMemo(() => {
+    return allAlgs[selectedIdx];
+  }, [allAlgs, selectedIdx]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -110,19 +104,20 @@ const AlgorithmModal = ({ alg, onClose }: Props) => {
               Mezcla
             </label>
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-              <CubeViewer alg={mezcla} />
+              <CubeViewer alg={setupAlg} />
             </div>
             <div className="font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-600 dark:text-slate-400 break-all mt-2">
-              {mezcla}
+              {setupAlg}
             </div>
+
           </div>
 
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 block">
               Solución
             </label>
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 overflow-hidden">
-              <CubeViewer alg={rightAlg} />
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 overflow-hidden p-1">
+              <CubeViewer scramble={setupAlg} alg={solutionAlg} controls />
             </div>
             <div className="mt-2 space-y-1.5 max-h-[260px] overflow-y-auto">
               {allAlgs.map((algStr, idx) => (
