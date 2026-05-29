@@ -11,7 +11,13 @@ interface Props {
 const filterLabels: Record<string, Record<string, string>> = {
   difficulty: { Easy: "Fácil", Medium: "Medio", Hard: "Difícil" },
   corners: { "3": "3 Esquinas", "2": "2 Esquinas", "1": "1 Esquina", "0": "0 Esquinas" },
-  edgeGroup: { all: "Todas las aristas orientadas correctamente", l: "Dos aristas orientadas (L)", line: "Dos aristas orientadas (Línea)" },
+  edgeGroup: {
+    all: "Todas las aristas orientadas",
+    l: "Dos aristas orientadas (L)",
+    line: "Dos aristas orientadas (Línea)",
+    corners: "Todas las esquinas orientadas",
+    none: "Ninguna arista orientada",
+  },
 };
 
 const AlgorithmFilter = ({ filters, activeFilters, search, onFilterChange, onSearchChange }: Props) => {

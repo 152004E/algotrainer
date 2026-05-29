@@ -3,6 +3,7 @@ import type { AlgoCase } from "../types";
 const OLLCases: AlgoCase[] = [
   {
     id: "oll-01",
+    edgeGroup: "none",
     name: "OLL 1",
     subset: "OLL",
     difficulty: "Medium",
@@ -16,6 +17,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-02",
+    edgeGroup: "none",
     name: "OLL 2",
     subset: "OLL",
     difficulty: "Easy",
@@ -32,6 +34,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-03",
+    edgeGroup: "none",
     name: "OLL 3",
     subset: "OLL",
     difficulty: "Medium",
@@ -49,6 +52,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-04",
+    edgeGroup: "none",
     name: "OLL 4",
     subset: "OLL",
     difficulty: "Medium",
@@ -248,6 +252,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-17",
+    edgeGroup: "none",
     name: "OLL 17",
     subset: "OLL",
     difficulty: "Medium",
@@ -261,6 +266,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-18",
+    edgeGroup: "none",
     name: "OLL 18",
     subset: "OLL",
     difficulty: "Medium",
@@ -278,6 +284,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-19",
+    edgeGroup: "none",
     name: "OLL 19",
     subset: "OLL",
     difficulty: "Medium",
@@ -291,6 +298,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-20",
+    edgeGroup: "none",
     name: "OLL 20",
     subset: "OLL",
     difficulty: "Hard",
@@ -427,6 +435,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-28",
+    edgeGroup: "corners",
     name: "OLL 28",
     subset: "OLL",
     difficulty: "Medium",
@@ -889,6 +898,7 @@ const OLLCases: AlgoCase[] = [
   },
   {
     id: "oll-57",
+    edgeGroup: "corners",
     name: "OLL 57",
     subset: "OLL",
     difficulty: "Hard",

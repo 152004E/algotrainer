@@ -24,8 +24,8 @@ export const algorithmCategories: AlgorithmCategory[] = [
     filters: [
       {
         key: "edgeGroup",
-        label: "Aristas orientadas",
-        values: ["all", "l", "line"],
+        label: "Estado de la última capa",
+        values: ["all", "l", "line", "corners", "none"],
         dependent: {
           key: "shapeGroup",
           label: "Caso",
@@ -33,11 +33,15 @@ export const algorithmCategories: AlgorithmCategory[] = [
             all: ["sune", "anti-sune", "h-cross", "pi", "u", "t", "diagonals"],
             l: ["p-shapes", "w-shapes", "l-shapes", "c-shapes", "t-shapes", "fish-shapes", "knight-shapes", "awkward-shapes", "square-shapes", "lightning-shapes"],
             line: ["i-shapes", "big-lightning", "small-lightning"],
+            corners: [],
+            none: [],
           },
           labels: {
             all: { sune: "Sune", "anti-sune": "Anti-Sune", "h-cross": "H-Cross", pi: "Pi", u: "U", t: "T", diagonals: "Diagonals" },
             l: { "p-shapes": "P Shapes", "w-shapes": "W Shapes", "l-shapes": "L Shapes", "c-shapes": "C Shapes", "t-shapes": "T Shapes", "fish-shapes": "Fish Shapes", "knight-shapes": "Knight Move Shapes", "awkward-shapes": "Awkward Shapes", "square-shapes": "Square Shapes", "lightning-shapes": "Lightning Shapes" },
             line: { "i-shapes": "I Shapes", "big-lightning": "Big Lightning Bolt", "small-lightning": "Small Lightning Bolt" },
+            corners: {},
+            none: {},
           },
         },
       },
