@@ -45,6 +45,9 @@ const AlgorithmCategory = () => {
         if (!value) continue;
         if (key === "difficulty" && c.difficulty !== value) return false;
         if (key === "corners" && c.corners !== Number(value)) return false;
+        if (key === "description" && c.description !== value) return false;
+        if (key === "edgeGroup" && c.edgeGroup !== value) return false;
+        if (key === "shapeGroup" && c.shapeGroup !== value) return false;
       }
       return true;
     });

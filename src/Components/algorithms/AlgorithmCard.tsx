@@ -7,18 +7,6 @@ interface Props {
   onClick: (alg: AlgoCase) => void;
 }
 
-const difficultyStyles: Record<string, string> = {
-  Easy: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  Medium: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  Hard: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
-};
-
-const difficultyLabels: Record<string, string> = {
-  Easy: "Fácil",
-  Medium: "Medio",
-  Hard: "Difícil",
-};
-
 const AlgorithmCard = ({ alg, onClick }: Props) => {
   const [imgError, setImgError] = useState(false);
   const imgSrc = `/algorithms/${alg.subset.toLowerCase()}/${alg.id}.png`;
@@ -46,15 +34,9 @@ const AlgorithmCard = ({ alg, onClick }: Props) => {
             <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
               {alg.name}
             </h4>
-            {alg.corners !== undefined ? (
-              <span className="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
-                {alg.corners} {alg.corners === 1 ? "Esquina" : "Esquinas"}
-              </span>
-            ) : (
-              <span
-                className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${difficultyStyles[alg.difficulty]}`}
-              >
-                {difficultyLabels[alg.difficulty] ?? alg.difficulty}
+            {alg.description && (
+              <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+                {alg.description}
               </span>
             )}
           </div>

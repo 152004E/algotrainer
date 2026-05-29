@@ -22,7 +22,25 @@ export const algorithmCategories: AlgorithmCategory[] = [
     lightGradient: "from-orange-50 to-orange-100",
     count: 57,
     filters: [
-      { key: "difficulty", label: "Dificultad", values: ["Easy", "Medium", "Hard"] },
+      {
+        key: "edgeGroup",
+        label: "Aristas orientadas",
+        values: ["all", "l", "line"],
+        dependent: {
+          key: "shapeGroup",
+          label: "Caso",
+          options: {
+            all: ["sune", "anti-sune", "h-cross", "pi", "u", "t", "diagonals"],
+            l: ["p-shapes", "w-shapes", "l-shapes", "c-shapes", "t-shapes", "fish-shapes", "knight-shapes", "awkward-shapes", "square-shapes", "lightning-shapes"],
+            line: ["i-shapes", "big-lightning", "small-lightning"],
+          },
+          labels: {
+            all: { sune: "Sune", "anti-sune": "Anti-Sune", "h-cross": "H-Cross", pi: "Pi", u: "U", t: "T", diagonals: "Diagonals" },
+            l: { "p-shapes": "P Shapes", "w-shapes": "W Shapes", "l-shapes": "L Shapes", "c-shapes": "C Shapes", "t-shapes": "T Shapes", "fish-shapes": "Fish Shapes", "knight-shapes": "Knight Move Shapes", "awkward-shapes": "Awkward Shapes", "square-shapes": "Square Shapes", "lightning-shapes": "Lightning Shapes" },
+            line: { "i-shapes": "I Shapes", "big-lightning": "Big Lightning Bolt", "small-lightning": "Small Lightning Bolt" },
+          },
+        },
+      },
     ],
   },
   {

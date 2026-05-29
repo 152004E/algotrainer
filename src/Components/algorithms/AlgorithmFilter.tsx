@@ -11,6 +11,7 @@ interface Props {
 const filterLabels: Record<string, Record<string, string>> = {
   difficulty: { Easy: "Fácil", Medium: "Medio", Hard: "Difícil" },
   corners: { "3": "3 Esquinas", "2": "2 Esquinas", "1": "1 Esquina", "0": "0 Esquinas" },
+  edgeGroup: { all: "Todas las aristas orientadas correctamente", l: "Dos aristas orientadas (L)", line: "Dos aristas orientadas (Línea)" },
 };
 
 const AlgorithmFilter = ({ filters, activeFilters, search, onFilterChange, onSearchChange }: Props) => {
@@ -39,24 +40,69 @@ const AlgorithmFilter = ({ filters, activeFilters, search, onFilterChange, onSea
         />
       </div>
 
-      {filters.map((filter) => (
-        <select
-          key={filter.key}
-          value={activeFilters[filter.key] || ""}
-          onChange={(e) => onFilterChange(filter.key, e.target.value)}
-          className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
-            bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
-            focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
-            transition-all capitalize"
-        >
-          <option value="">{filter.label}</option>
-          {filter.values.map((v) => (
-            <option key={v} value={v}>
-              {filterLabels[filter.key]?.[v] ?? v}
-            </option>
-          ))}
-        </select>
-      ))}
+      {filters.map((filter) => {
+        if (filter.dependent) {
+          const parentVal = activeFilters[filter.key];
+          const childOptions = parentVal ? filter.dependent.options[parentVal] ?? [] : [];
+          return (
+            <div key={filter.key} className="flex gap-3">
+              <select
+                value={parentVal || ""}
+                onChange={(e) => {
+                  onFilterChange(filter.key, e.target.value);
+                  onFilterChange(filter.dependent!.key, "");
+                }}
+                className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
+                  bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
+                  transition-all"
+              >
+                <option value="">{filter.label}</option>
+                {filter.values.map((v) => (
+                  <option key={v} value={v}>
+                    {filterLabels[filter.key]?.[v] ?? v}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={activeFilters[filter.dependent.key] || ""}
+                onChange={(e) => onFilterChange(filter.dependent!.key, e.target.value)}
+                disabled={!parentVal}
+                className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
+                  bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
+                  focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
+                  transition-all capitalize disabled:opacity-40"
+              >
+                <option value="">{filter.dependent.label}</option>
+                {childOptions.map((v) => (
+                  <option key={v} value={v}>
+                    {filter.dependent!.labels[parentVal]?.[v] ?? v}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        }
+
+        return (
+          <select
+            key={filter.key}
+            value={activeFilters[filter.key] || ""}
+            onChange={(e) => onFilterChange(filter.key, e.target.value)}
+            className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 
+              bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
+              focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
+              transition-all capitalize"
+          >
+            <option value="">{filter.label}</option>
+            {filter.values.map((v) => (
+              <option key={v} value={v}>
+                {filterLabels[filter.key]?.[v] ?? v}
+              </option>
+            ))}
+          </select>
+        );
+      })}
     </div>
   );
 };

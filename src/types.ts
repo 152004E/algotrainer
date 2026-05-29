@@ -6,11 +6,17 @@ export interface AlgoCase {
   scramble: string;
   algorithm: string;
   description?: string;
+  edgeGroup?: string;
+  shapeGroup?: string;
   alternatives?: string[];
   recognition?: string;
   fingertricks?: string;
   corners?: number;
   shape?: string;
+  aliases?: string[];
+  usedIn?: string;
+  optimalMoves?: string;
+  notes?: string;
 }
 
 export interface AlgorithmCategory {
@@ -28,6 +34,14 @@ export interface FilterOption {
   key: string;
   label: string;
   values: string[];
+  dependent?: DependentFilter;
+}
+
+export interface DependentFilter {
+  key: string;
+  label: string;
+  options: Record<string, string[]>;
+  labels: Record<string, Record<string, string>>;
 }
 
 export interface SessionStats {
