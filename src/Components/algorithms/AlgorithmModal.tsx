@@ -5,6 +5,7 @@ import CubeViewer, { type CubeViewerHandle } from "./CubeViewer";
 
 interface Props {
   alg: AlgoCase;
+  allAlgorithms?: string[];
   onClose: () => void;
 }
 
@@ -20,11 +21,11 @@ const difficultyLabels: Record<string, string> = {
   Hard: "Difícil",
 };
 
-const AlgorithmModal = ({ alg, onClose }: Props) => {
+const AlgorithmModal = ({ alg, allAlgorithms, onClose }: Props) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const allAlgs = useMemo(
-    () => [alg.algorithm, ...(alg.alternatives ?? [])],
-    [alg.algorithm, alg.alternatives],
+    () => allAlgorithms ?? [alg.algorithm, ...(alg.alternatives ?? [])],
+    [alg.algorithm, alg.alternatives, allAlgorithms],
   );
   const [selectedIdx, setSelectedIdx] = useState(0);
 

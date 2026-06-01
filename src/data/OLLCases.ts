@@ -15,22 +15,6 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Runway", "Blank"],
     usedIn: "OLL",
     optimalMoves: "11 HTM",
-    alternatives: ["(U) R U' R2 D' r U' r' D R2 U R'"],
-  },
-  {
-    id: "oll-02",
-    edgeGroup: "none",
-    shapeGroup: "0",
-    corners: 0,
-    name: "OLL 2",
-    subset: "OLL",
-    difficulty: "Easy",
-    scramble: "F R U R' U' F' f R U R' U' f'",
-    algorithm: "F R U R' U' F' f R U R' U' f'",
-    description: "Dot",
-    aliases: ["Zamboni"],
-    usedIn: "OLL",
-    optimalMoves: "11 HTM",
     alternatives: [
       "(U') R U' R2' D' r U r' D R2 U R",
       "(U2) f' U R U' R' S' U R U' R' F'",
@@ -50,6 +34,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Pinwheel", "Anti-Mouse"],
     usedIn: "OLL",
     optimalMoves: "11 HTM",
+    ergonomicPairId: "oll-04",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U2) r' R2 U R' U r U2 r' U M'",
       "(U2) L' l U l' U2 l U L' U L M'",
@@ -70,6 +56,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Pinwheel", "Mouse"],
     usedIn: "OLL",
     optimalMoves: "11 HTM",
+    ergonomicPairId: "oll-03",
     alternatives: [
       "(U) l L2' U' L U' l' U2 l U' M'",
       "(U) R r' U' r U2 r' U' R U' R2' r",
@@ -210,6 +197,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Gun", "Trigger"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-14",
+    isCanonicalVariantSource: true,
     alternatives: [
       "F U R U' R2' F' R U R U' R'",
       "r U' r' U' r U r' F' U F",
@@ -228,6 +217,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Gun", "Anti-Trigger"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-13",
   },
   {
     id: "oll-15",
@@ -242,6 +232,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Squeegee"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-16",
+    isCanonicalVariantSource: true,
     alternatives: ["r' U' r R' U' R U r' U r"],
   },
   {
@@ -257,6 +249,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Squeegee"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-15",
   },
   {
     id: "oll-17",
@@ -428,6 +421,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Antisune", "AS", "S-", "Swimming Right"],
     usedIn: "OCLL, OLL",
     optimalMoves: "7 HTM",
+    ergonomicPairId: "oll-27",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U') R' U' R U' R' U2 R",
       " R U2' R' U' R U' R'",
@@ -447,6 +442,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Sune", "S", "Swimming Left"],
     usedIn: "OCLL, OLL",
     optimalMoves: "7 HTM",
+    ergonomicPairId: "oll-26",
     alternatives: ["(U') R' U2' R U R' U R"],
   },
   {
@@ -480,6 +476,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Spotted Chameleon"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-30",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U) R U R' U' R' F R F' R U R' U' M' U R U' r'",
       "r2' D' r U r' D r2 U' r' U' r",
@@ -498,6 +496,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Spotted Chameleon"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-29",
     alternatives: [
       "(U') r' D' r U' r' D r2 U' r' U r U r'",
       "(U2) F R' F R2 U' R' U' R U R' F2'",
@@ -516,6 +515,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Couch"],
     usedIn: "OLL",
     optimalMoves: "9 HTM",
+    ergonomicPairId: "oll-32",
   },
   {
     id: "oll-32",
@@ -530,6 +530,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Couch"],
     usedIn: "OLL",
     optimalMoves: "9 HTM",
+    ergonomicPairId: "oll-31",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U2) L U F' U' L' U L F L'",
       "R U B' U' R' U R B R'",
@@ -594,6 +596,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Sea-Mew", "Wario", "Anti-Moustache"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-38",
+    isCanonicalVariantSource: true,
     alternatives: [
       " R U R' F' R U R' U' R' F R U' R' F R F'",
       " R' F' U' F2 U R U' R' F' R",
@@ -627,6 +631,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Mario", "Moustache"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-36",
   },
   {
     id: "oll-39",
@@ -673,6 +678,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Awkward Fish", "Dalmation"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-42",
   },
   {
     id: "oll-42",
@@ -687,6 +693,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Lefty Awkward Fish", "Anti-Dalmation"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-41",
+    isCanonicalVariantSource: true,
     alternatives: [
       "R' U' R U' R' U2' R U R' F' U' F U R",
       "(U) R' F R F' R' F R F' R U R' U' R U R'",
@@ -706,6 +714,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-P"],
     usedIn: "OLL",
     optimalMoves: "6 HTM",
+    ergonomicPairId: "oll-44",
   },
   {
     id: "oll-44",
@@ -720,6 +729,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["P"],
     usedIn: "OLL",
     optimalMoves: "6 HTM",
+    ergonomicPairId: "oll-43",
   },
   {
     id: "oll-45",
@@ -762,6 +772,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Breakneck"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-48",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U') F R' F' R U2 R U' R' U R U2' R'",
       "R' U' R' F R F' R' F R F' U R",
@@ -781,6 +793,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Breakneck"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
+    ergonomicPairId: "oll-47",
   },
   {
     id: "oll-49",

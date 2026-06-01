@@ -10,6 +10,7 @@ import type { AlgoCase } from "../../types";
 import AlgorithmCard from "../../Components/algorithms/AlgorithmCard";
 import AlgorithmFilter from "../../Components/algorithms/AlgorithmFilter";
 import AlgorithmModal from "../../Components/algorithms/AlgorithmModal";
+import { resolveAllAlgorithms } from "../../utils/resolveVariants";
 
 const dataMap: Record<string, AlgoCase[]> = {
   f2l: f2lCases,
@@ -29,6 +30,11 @@ const AlgorithmCategory = () => {
   const [search, setSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
   const [selectedAlg, setSelectedAlg] = useState<AlgoCase | null>(null);
+
+  const selectedAlgAlgorithms = useMemo(
+    () => selectedAlg ? resolveAllAlgorithms(selectedAlg, allCases) : null,
+    [selectedAlg, allCases],
+  );
 
   const filtered = useMemo(() => {
     return allCases.filter((c) => {
@@ -139,8 +145,12 @@ const AlgorithmCategory = () => {
         )}
       </div>
 
-      {selectedAlg && (
-        <AlgorithmModal alg={selectedAlg} onClose={() => setSelectedAlg(null)} />
+      {selectedAlg && selectedAlgAlgorithms && (
+        <AlgorithmModal
+          alg={selectedAlg}
+          allAlgorithms={selectedAlgAlgorithms}
+          onClose={() => setSelectedAlg(null)}
+        />
       )}
     </div>
   );

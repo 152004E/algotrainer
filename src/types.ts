@@ -17,6 +17,17 @@ export interface AlgoCase {
   usedIn?: string;
   optimalMoves?: string;
   notes?: string;
+  /**
+   * ID del caso que forma la pareja ergonómica (left/right mirror).
+   * Ej: OLL 47 ↔ OLL 48 comparten ergonomicPairId.
+   */
+  ergonomicPairId?: string;
+  /**
+   * Indica si este caso es la fuente canónica de variantes.
+   * Si es true, sus `alternatives` se usarán para generar
+   * las variantes de su pareja ergonómica mediante mirror.
+   */
+  isCanonicalVariantSource?: boolean;
 }
 
 export interface AlgorithmCategory {
