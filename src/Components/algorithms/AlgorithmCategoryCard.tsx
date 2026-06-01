@@ -1,9 +1,37 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import type { AlgorithmCategory } from "../../types";
+import "cubing/twisty";
 
 interface Props {
   category: AlgorithmCategory;
 }
+
+const MiniCube = () => {
+  const ref = useRef<any>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.alg = "R U R' U R U2' R' . R U2 R' U' R U' R'";
+    const t = setTimeout(() => {
+      try {
+        el.controller.animationController.play({ loop: true });
+      } catch {}
+    }, 500);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <twisty-player
+      ref={ref}
+      puzzle="3x3x3"
+      background="white"
+      control-panel="none"
+      viewer-link="none"
+      hint-facelets="none"
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
+};
 
 const AlgorithmCategoryCard = ({ category }: Props) => {
   return (
@@ -21,9 +49,13 @@ const AlgorithmCategoryCard = ({ category }: Props) => {
       <div className="relative p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div
-            className={`w-12 h-12 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-xl shadow-lg`}
+            className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-xl shadow-lg`}
           >
-            {category.icon}
+            {category.slug === "oll" ? (
+              <MiniCube />
+            ) : (
+              category.icon
+            )}
           </div>
           <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
             {category.count} alg.

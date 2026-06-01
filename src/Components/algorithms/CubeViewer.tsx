@@ -7,6 +7,9 @@ interface Props {
   className?: string;
   height?: string;
   controls?: boolean;
+  autoPlay?: boolean;
+  loop?: boolean;
+  background?: string;
   onFinish?: () => void;
 }
 
@@ -15,9 +18,9 @@ export interface CubeViewerHandle {
   jumpToStart: () => void;
 }
 
-const SPEEDS = [0.25, 0.5, 1, 2];
+const SPEEDS = [0.25, 0.5, 1, 2, 2.5];
 
-const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, className = "", height = "240px", controls = false, onFinish }, ref) => {
+const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, className = "", height = "240px", controls = false, autoPlay = false, loop: loopProp, background = "none", onFinish }, ref) => {
   const playerRef = useRef<any>(null);
   const rafRef = useRef<number>(0);
   const tsRef = useRef(0);
@@ -28,8 +31,11 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, classNa
   const [atEnd, setAtEnd] = useState(false);
   const [timestamp, setTimestamp] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [speed, setSpeed] = useState(1);
-  const [loop, setLoop] = useState(false);
+  const [speed, setSpeed] = useState(() => {
+    const saved = localStorage.getItem("cubeviewer:speed");
+    return saved ? Number(saved) : 1;
+  });
+  const [loop, setLoop] = useState(loopProp ?? false);
 
   const syncTimeline = useCallback(async () => {
     const el = playerRef.current;
@@ -95,10 +101,23 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, classNa
   }, [alg, scramble, syncDuration]);
 
   useEffect(() => {
+    localStorage.setItem("cubeviewer:speed", String(speed));
     const el = playerRef.current;
     if (!el) return;
     el.tempoScale = speed;
   }, [speed]);
+
+  useEffect(() => {
+    if (!autoPlay) return;
+    const el = playerRef.current;
+    if (!el) return;
+    const t = setTimeout(() => {
+      el.controller.animationController.play({ loop });
+      setPlaying(true);
+      watchFinish.current = true;
+    }, 300);
+    return () => clearTimeout(t);
+  }, [autoPlay, loop, alg, scramble]);
 
   useEffect(() => {
     if (!controls) return;
@@ -219,7 +238,7 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(({ alg, scramble, classNa
       <twisty-player
         ref={playerRef}
         puzzle="3x3x3"
-        background="none"
+        background={background}
         control-panel="none"
         viewer-link="none"
         hint-facelets="none"

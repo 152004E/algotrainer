@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { algorithmCategories } from "../../data/algorithmCatalog";
 import OLLCases from "../../data/OLLCases";
 import PLLCases from "../../data/PLLCases";
@@ -10,6 +10,7 @@ import type { AlgoCase } from "../../types";
 import AlgorithmCard from "../../Components/algorithms/AlgorithmCard";
 import AlgorithmFilter from "../../Components/algorithms/AlgorithmFilter";
 import AlgorithmModal from "../../Components/algorithms/AlgorithmModal";
+import "cubing/twisty";
 import { resolveAllAlgorithms } from "../../utils/resolveVariants";
 
 const dataMap: Record<string, AlgoCase[]> = {
@@ -20,6 +21,30 @@ const dataMap: Record<string, AlgoCase[]> = {
   mw: MWCases,
   coll: [],
   zbll: [],
+};
+
+const MiniCubeIcon = () => {
+  const ref = useRef<any>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.alg = "R U R' U R U2' R' . R U2 R' U' R U' R'";
+    const t = setTimeout(() => {
+      try { el.controller.animationController.play({ loop: true }); } catch {}
+    }, 500);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <twisty-player
+      ref={ref}
+      puzzle="3x3x3"
+      background="white"
+      control-panel="none"
+      viewer-link="none"
+      hint-facelets="none"
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
 };
 
 const AlgorithmCategory = () => {
@@ -85,9 +110,13 @@ const AlgorithmCategory = () => {
 
         <div className="flex items-center gap-4 mb-2">
           <div
-            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-lg shadow-lg`}
+            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-lg shadow-lg overflow-hidden`}
           >
-            {category.icon}
+            {category.slug === "oll" ? (
+              <MiniCubeIcon />
+            ) : (
+              category.icon
+            )}
           </div>
           <div>
             <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
