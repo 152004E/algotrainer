@@ -478,8 +478,8 @@ const OLLCases: AlgoCase[] = [
     ergonomicPairId: "oll-30",
     isCanonicalVariantSource: true,
     alternatives: [
-      " R U R' U' R' F R F' R U R' U' M' U R U' r'",
-      "r2' D' r U r' D r2 U' r' U' r",
+      " R U R' U' R' F R F' R U R' U' M U R U' r'",
+      "(U') r2' D' r U r' D r2 U' r' U' r",
     ],
   },
   {
