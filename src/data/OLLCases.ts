@@ -16,8 +16,7 @@ const OLLCases: AlgoCase[] = [
     usedIn: "OLL",
     optimalMoves: "11 HTM",
     alternatives: [
-      "(U') R U' R2' D' r U r' D R2 U R",
-      "(U2) f' U R U' R' S' U R U' R' F'",
+      "(U') R U' R2' D' r U' r' D R2 U R'",
     ],
   },
   {
@@ -231,14 +230,14 @@ const OLLCases: AlgoCase[] = [
     subset: "OLL",
     difficulty: "Medium",
     scramble: "l' U' l L' U' L U l' U l",
-    algorithm: "l' U' l L' U' L U l' U l",
+    algorithm: "U2 l' U' l L' U' L U l' U l",
     description: "Knight",
     aliases: ["Squeegee"],
     usedIn: "OLL",
     optimalMoves: "10 HTM",
     ergonomicPairId: "oll-16",
     isCanonicalVariantSource: true,
-    alternatives: ["r' U' r R' U' R U r' U r"],
+    alternatives: [" r' U' r R' U' R U r' U r"],
   },
   {
     id: "oll-16",
@@ -248,7 +247,7 @@ const OLLCases: AlgoCase[] = [
     subset: "OLL",
     difficulty: "Medium",
     scramble: "r U r' R U R' U' r U' r'",
-    algorithm: "r U r' R U R' U' r U' r'",
+    algorithm: "U2 r U r' R U R' U' r U' r'",
     description: "Knight",
     aliases: ["Anti-Squeegee"],
     usedIn: "OLL",
@@ -645,6 +644,8 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Fung"],
     usedIn: "OLL",
     optimalMoves: "9 HTM",
+    ergonomicPairId: "oll-40",
+    isCanonicalVariantSource: true,
     alternatives: [
       "(U2) R U R' F' U' F U R U2' R'",
       "(U2) f' r U r' U' r' F r S",
@@ -663,6 +664,7 @@ const OLLCases: AlgoCase[] = [
     aliases: ["Anti-Fung"],
     usedIn: "OLL",
     optimalMoves: "9 HTM",
+    ergonomicPairId: "oll-39",
   },
   {
     id: "oll-41",
@@ -838,7 +840,7 @@ const OLLCases: AlgoCase[] = [
     optimalMoves: "10 HTM",
     alternatives: [
       "(U2) f R U R' U' R U R' U' f'",
-      "(U) R' U' R' F R F' R U2' R' U2 R",
+      
     ],
   },
   {
@@ -903,8 +905,8 @@ const OLLCases: AlgoCase[] = [
     usedIn: "OLL",
     optimalMoves: "11 HTM",
     alternatives: [
-      "(U) R' F U R U' R2' F' R2 U R' U' R",
-      "(U) r U2' R' U' r' R2 U R' U' r U' r'",
+      " R' F U R U' R2' F' R2 U R' U' R",
+      " r U2' R' U' r' R2 U R' U' r U' r'",
     ],
   },
   {
