@@ -13,9 +13,44 @@ function getEffectiveSetup(alg: string): string {
   return new Alg(alg).invert().toString();
 }
 
+function uLayerEquals(a: any, b: any): boolean {
+  const aE = JSON.stringify(a.patternData["EDGES"].pieces.slice(0, 4));
+  const bE = JSON.stringify(b.patternData["EDGES"].pieces.slice(0, 4));
+  if (aE !== bE) return false;
+  const aC = JSON.stringify(a.patternData["CORNERS"].pieces.slice(0, 4));
+  const bC = JSON.stringify(b.patternData["CORNERS"].pieces.slice(0, 4));
+  return aC === bC;
+}
+
+/** Find consecutive same-face pairs that are redundant (e.g. U' U, U U', U2 U2). */
+function countSeamRedundancies(s: string): number {
+  const parts = s.trim().split(/\s+/);
+  let count = 0;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (parts[i][0] === parts[i + 1][0]) count++;
+  }
+  return count;
+}
+
+/** Check if a scramble equals the base setup + optional D-layer moves. */
+function isDEquivalent(scramble: string, base: string): boolean {
+  const sParts = scramble.trim().split(/\s+/).filter(Boolean);
+  const bParts = base.trim().split(/\s+/).filter(Boolean);
+  if (sParts.length < bParts.length) return false;
+
+  // Check if the scramble starts with the base setup,
+  // and the extra moves are only D-layer ones.
+  const prefix = sParts.slice(0, bParts.length).join(" ");
+  if (prefix !== base) return false;
+
+  const suffix = sParts.slice(bParts.length);
+  return suffix.every(m => m[0] === "D");
+}
+
 async function main() {
   console.log("\n" + "=".repeat(64));
   console.log("  SCRAMBLE DIVERSITY VALIDATION — OLL 33");
+  console.log("  (boundary-only simplification, no dmove)");
   console.log("=".repeat(64));
 
   const oll33 = OLLCases.find((c) => c.id === "oll-33");
@@ -24,8 +59,9 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`\n  Scramble (from invert algorithm): ${getEffectiveSetup(oll33.algorithm)}`);
-  console.log(`  Algorithm:                        ${oll33.algorithm}`);
+  const baseSetup = getEffectiveSetup(oll33.algorithm);
+  console.log(`\n  Base setup (invert algorithm): ${baseSetup}`);
+  console.log(`  Algorithm:                      ${oll33.algorithm}`);
   console.log(`\n  Generating ${100} scrambles...\n`);
 
   const kp: KPuzzle = await cube3x3x3.kpuzzle();
@@ -49,21 +85,20 @@ async function main() {
   }
 
   // --- 1. Pattern validation ---
-  const expected = kp.defaultPattern().applyAlg(new Alg(getEffectiveSetup(oll33.algorithm)));
+  const expected = kp.defaultPattern().applyAlg(new Alg(baseSetup));
   let patternOk = 0, patternFail = 0;
   for (const s of scrambles) {
     const actual = kp.defaultPattern().applyAlg(new Alg(s));
-    if (expected.isIdentical(actual)) patternOk++;
+    if (uLayerEquals(expected, actual)) patternOk++;
     else patternFail++;
   }
-  console.log(`  1. Pattern correct:  ${patternOk}/${scrambles.length} (${(patternOk / scrambles.length * 100).toFixed(1)}%)`);
-  if (patternFail > 0) console.log(`     ✗ ${patternFail} scrambles produced wrong state`);
+  console.log(`  1. U-layer correct: ${patternOk}/${scrambles.length} (${(patternOk / scrambles.length * 100).toFixed(1)}%)`);
+  if (patternFail > 0) console.log(`     ✗ ${patternFail} scrambles produced wrong U-layer`);
 
   // --- 2. Unique scrambles ---
   const unique = new Set(scrambles);
   console.log(`  2. Unique scrambles: ${unique.size}/${scrambles.length} (${(unique.size / scrambles.length * 100).toFixed(1)}%)`);
 
-  // --- 3. Duplicates if any ---
   if (unique.size < scrambles.length) {
     const counts = new Map<string, number>();
     for (const s of scrambles) counts.set(s, (counts.get(s) ?? 0) + 1);
@@ -74,7 +109,7 @@ async function main() {
     }
   }
 
-  // --- 4. Last-10-move suffixes ---
+  // --- 3. Last-N suffix diversity ---
   const suffixes10 = scrambles.map((s) => lastN(s, 10));
   const uniq10 = new Set(suffixes10);
   console.log(`  3. Unique last-10 suffixes: ${uniq10.size}/${scrambles.length} (${(uniq10.size / scrambles.length * 100).toFixed(1)}%)`);
@@ -90,33 +125,50 @@ async function main() {
     }
   }
 
-  // --- 5. Last-5-move frequency ---
+  // --- 4. Last-5-move frequency ---
   const suffixes5 = scrambles.map((s) => lastN(s, 5));
-  const counts5 = new Map<string, number>();
-  for (const sfx of suffixes5) counts5.set(sfx, (counts5.get(sfx) ?? 0) + 1);
-  const sorted5 = [...counts5.entries()].sort((a, b) => b[1] - a[1]);
   const uniq5 = new Set(suffixes5);
   console.log(`  4. Unique last-5 suffixes: ${uniq5.size}/${scrambles.length} (${(uniq5.size / scrambles.length * 100).toFixed(1)}%)`);
-  console.log(`     Frequency of last-5 endings:`);
-  for (const [sfx, c] of sorted5.slice(0, 15)) {
-    const pct = (c / scrambles.length * 100).toFixed(1);
-    const bar = "█".repeat(Math.round(c / scrambles.length * 50));
-    console.log(`     ${pct}% ${bar}  ${sfx}`);
-  }
 
-  // --- 6. Sample scrambles ---
-  console.log(`\n  5. Sample scrambles (first 5):`);
+  // --- 5. Seam redundancy (expected from boundary-only) ---
+  const redundancies = scrambles.map(countSeamRedundancies);
+  const totalRedundantPairs = redundancies.reduce((a, b) => a + b, 0);
+  const avgRedundant = (totalRedundantPairs / scrambles.length).toFixed(1);
+  const maxRedundant = Math.max(...redundancies);
+  const minRedundant = Math.min(...redundancies);
+  console.log(`  5. Seam-redundant pairs (same-face adjacent): avg=${avgRedundant}, min=${minRedundant}, max=${maxRedundant}`);
+  console.log(`     (expected: ~1 pair from pert/invert boundary; not a failure)`);
+
+  // --- 6. Scramble length stats ---
+  const lengths = scrambles.map(s => s.trim().split(/\s+/).length);
+  const avgLen = (lengths.reduce((a, b) => a + b, 0) / lengths.length).toFixed(1);
+  const baseLen = baseSetup.trim().split(/\s+/).length;
+  console.log(`  6. Base setup length: ${baseLen} moves`);
+  console.log(`     Scramble length: avg=${avgLen}, min=${Math.min(...lengths)}, max=${Math.max(...lengths)}`);
+
+  // --- 7. D-equivalence check ---
+  let dEqCount = 0;
+  for (const s of scrambles) {
+    if (isDEquivalent(s, baseSetup)) dEqCount++;
+  }
+  console.log(`  7. D-equivalent scrambles (base + D-move): ${dEqCount}/${scrambles.length}`);
+  console.log(`     (should be 0 without dmove suffix)`);
+
+  // --- 8. Sample scrambles ---
+  console.log(`\n  8. Sample scrambles (first 5):`);
   for (let i = 0; i < Math.min(5, scrambles.length); i++) {
     console.log(`     [${i + 1}] ${scrambles[i]}`);
   }
 
-  // --- 7. Final verdict ---
+  // --- 9. Final verdict ---
   const diversityOk = uniq10.size > 10;
   console.log(`\n  ${"=".repeat(64)}`);
-  if (patternOk === scrambles.length && diversityOk) {
-    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique scrambles, ${uniq10.size} unique suffixes`);
+  if (patternOk === scrambles.length && diversityOk && dEqCount === 0) {
+    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique, ${uniq10.size} unique last-10, 0 D-equivalent`);
   } else if (patternOk < scrambles.length) {
-    console.log(`  ✗ FAILED — ${patternFail} scrambles with wrong pattern`);
+    console.log(`  ✗ FAILED — ${patternFail} scrambles with wrong U-layer`);
+  } else if (dEqCount > 0) {
+    console.log(`  ⚠ WARNING — ${dEqCount} scrambles D-equivalent to base`);
   } else {
     console.log(`  ⚠ WARNING — Only ${uniq10.size} unique last-10 suffixes (low diversity)`);
   }

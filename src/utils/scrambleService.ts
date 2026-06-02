@@ -11,6 +11,50 @@ function normalize(s: string): string {
   return s.replace(/([UDFRLB])2'/g, "$12");
 }
 
+/** Combine two moves on the same face; returns "" if they cancel. */
+function combineMoves(a: string, b: string): string {
+  function power(suffix: string): number {
+    if (suffix === "'") return 3;
+    if (suffix === "2") return 2;
+    return 1;
+  }
+  const face = a[0];
+  const p = (power(a.slice(1)) + power(b.slice(1))) % 4;
+  if (p === 0) return "";
+  if (p === 1) return face;
+  if (p === 2) return face + "2";
+  return face + "'";
+}
+
+/**
+ * One-pass boundary simplification between concatenated segments.
+ * Checks each junction between adjacent segments once; does NOT cascade.
+ */
+function simplifyBoundary(segments: string[]): string {
+  const parts = segments.map(s => s.trim().split(/\s+/).filter(Boolean));
+
+  for (let i = 0; i < parts.length - 1; i++) {
+    const a = parts[i];
+    const b = parts[i + 1];
+    if (a.length === 0 || b.length === 0) continue;
+
+    const lastA = a[a.length - 1];
+    const firstB = b[0];
+
+    if (lastA[0] === firstB[0]) {
+      const combined = combineMoves(lastA, firstB);
+      if (combined === "") {
+        a.pop();
+      } else {
+        a[a.length - 1] = combined;
+      }
+      b.shift();
+    }
+  }
+
+  return parts.map(p => p.join(" ")).filter(Boolean).join(" ");
+}
+
 function randomMoves(count: number): string {
   const m: string[] = [];
   let last = "";
@@ -110,12 +154,20 @@ export class ScrambleService {
     const solvedToPerturbed = normalize(String(perturbedToSolved.invert()));
     const pertInverted = normalize(String(pertAlg.invert()));
 
-    let scramble = `${solvedToPerturbed} ${pertInverted}`;
+    const segments = [solvedToPerturbed, pertInverted];
     if (correction) {
-      scramble += ` ${INVERSE[correction]}`;
+      segments.push(INVERSE[correction]);
     }
 
-    return normalize(scramble.trim().replace(/  +/g, " "));
+    const scramble = simplifyBoundary(segments);
+
+    // Rejection: if scramble collapsed to base setup, regenerate
+    const base = normalize(getEffectiveSetup(c));
+    if (scramble === base) {
+      return this.generateScramble(c);
+    }
+
+    return scramble;
   }
 
   /** Pre-warm the cache for a list of cases (call once on load). */

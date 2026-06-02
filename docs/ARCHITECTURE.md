@@ -8,7 +8,8 @@
 - **cubing.js** — `cubing/puzzles`, `cubing/kpuzzle`, `cubing/search`, `cubing/alg`
   - 3x3x3 interactive cube in Hero
   - KPattern + KTransformation for cube state
-  - `solveTwips` for dynamic scramble generation
+  - `experimentalSolve3x3x3IgnoringCenters` (min2phase/Kociemba) for scramble generation
+  - `Alg` for invert/normalize
 - **No state management** — local state + props only
 
 ## Directory Structure
@@ -75,14 +76,13 @@ src/
 │       └── TrainerModal.tsx     Modal showing algorithm selection grid
 │
 ├── utils/
-│   ├── scambleService.ts       [PLANNED] Dynamic scramble generation
-│   ├── derivePattern.ts        [PLANNED] Setup alg → KPattern conversion
+│   ├── scrambleService.ts      Dynamic scramble generation (Kociemba composition)
 │   ├── resolveVariants.ts      Algorithm variant resolution
 │   └── mirrorAlgorithm.ts      Mirror transformation for ergonomic pairs
 │
 ├── hooks/
 │   ├── useTrainer.ts           Basic trainer logic (fixed scrambles)
-│   └── useScrambledTrainer.ts [PLANNED] Trainer with dynamic scrambles
+│   └── useScrambledTrainer.ts  [PLANNED] Trainer with dynamic scrambles
 │
 └── data/
     ├── WVCases.ts              Winter Variation cases [POPULATED]
@@ -92,7 +92,8 @@ src/
     └── PLLCases.ts             PLL 21 cases [POPULATED]
 
 scripts/
-└── validateScrambleGeneration.ts    Math correctness validation script
+├── validateCleanScrambles.ts       564/564 pattern + clean (todos subsets)
+└── validateScrambleDiversity.ts    OLL 33 uniqueness + D-equivalence
 ```
 
 ## Current Route Map
@@ -140,10 +141,22 @@ Trainer Page
   └─ TrainerSidebar(stats: sessionStats)
 ```
 
-### Phase 3 (Dynamic scramble generation — current target)
+### Phase 3 (Dynamic scramble generation — implemented)
 ```
-ScrambleService (singleton, init on app load)
+ScrambleService (singleton)
   └─ generateScramble(caseData) → string
+    └─ Kociemba composition:
+      └─ target = solved.applyAlg(getEffectiveSetup(c))
+      └─ pert = randomMoves(3-5)
+      └─ solveMin2Phase(target.applyAlg(pert)) → invert → solvedToPerturbed
+      └─ scramble = simplifyBoundary([solvedToPerturbed, invert(pert)])
+
+AlgorithmCategory (for OLL 33 currently)
+  ├─ dynamicScramble: string | undefined
+  ├─ handleNewScramble: () => void
+  └─ AlgorithmModal(dynamicScramble, onNewScramble)
+    ├─ CubeViewer(setupAlg)               [twisty-player with scramble]
+    └─ Button "Nuevo Scramble"
 
 useScrambledTrainer(cases: AlgoCase[])
   ├─ currentCase: AlgoCase
@@ -153,13 +166,6 @@ useScrambledTrainer(cases: AlgoCase[])
   ├─ nextCase(): void
   ├─ revealAlgorithm(): void
   └─ stats: SessionStats
-
-Trainer Page
-  ├─ ScrambleBox(scramble, loading)       [shows skeleton while loading]
-  ├─ CubeViewer(scramble)                 [twisty-player with setup]
-  ├─ AlgorithmBox(algorithm, revealed)
-  ├─ NextCaseButton(onNext)
-  └─ TrainerSidebar(stats)
 ```
 
 ## Component Hierarchy
