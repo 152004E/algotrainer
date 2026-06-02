@@ -26,7 +26,7 @@ function randomMoves(count: number): string {
 }
 
 function getEffectiveSetup(c: AlgoCase): string {
-  return c.scramble || new Alg(c.algorithm).invert().toString();
+  return new Alg(c.algorithm).invert().toString();
 }
 
 /**
@@ -99,21 +99,20 @@ export class ScrambleService {
   }
 
   async generateScramble(c: AlgoCase): Promise<string> {
-    const kp = await this.getKPuzzle();
     const { target, correction } = await this.prepareTarget(c);
 
     const pertCount = 3 + Math.floor(Math.random() * 3);
     const pert = randomMoves(pertCount);
-    const pertInverted = normalize(String(new Alg(pert).invert()));
+    const pertAlg = new Alg(pert);
 
-    const targetToSolved = await solveMin2Phase(target);
-    const solvedToTarget = normalize(String(targetToSolved.invert()));
+    const perturbedTarget = target.applyAlg(pertAlg);
+    const perturbedToSolved = await solveMin2Phase(perturbedTarget);
+    const solvedToPerturbed = normalize(String(perturbedToSolved.invert()));
+    const pertInverted = normalize(String(pertAlg.invert()));
 
-    let scramble: string;
+    let scramble = `${solvedToPerturbed} ${pertInverted}`;
     if (correction) {
-      scramble = `${pert} ${pertInverted} ${solvedToTarget} ${INVERSE[correction]}`;
-    } else {
-      scramble = `${pert} ${pertInverted} ${solvedToTarget}`;
+      scramble += ` ${INVERSE[correction]}`;
     }
 
     return normalize(scramble.trim().replace(/  +/g, " "));

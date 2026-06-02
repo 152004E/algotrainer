@@ -13,7 +13,7 @@ const FACES_RE = /^[UDFRLBy'2 ]+$/;
 const isClean = (s: string) => FACES_RE.test(s);
 
 function getEffectiveSetup(c: AlgoCase): string {
-  return c.scramble || new Alg(c.algorithm).invert().toString();
+  return new Alg(c.algorithm).invert().toString();
 }
 
 async function main() {

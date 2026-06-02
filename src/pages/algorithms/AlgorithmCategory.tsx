@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { algorithmCategories } from "../../data/algorithmCatalog";
 import OLLCases from "../../data/OLLCases";
 import PLLCases from "../../data/PLLCases";
@@ -12,6 +12,7 @@ import AlgorithmFilter from "../../Components/algorithms/AlgorithmFilter";
 import AlgorithmModal from "../../Components/algorithms/AlgorithmModal";
 import "cubing/twisty";
 import { resolveAllAlgorithms } from "../../utils/resolveVariants";
+import { scrambleService } from "../../utils/scrambleService";
 
 const dataMap: Record<string, AlgoCase[]> = {
   f2l: f2lCases,
@@ -55,11 +56,27 @@ const AlgorithmCategory = () => {
   const [search, setSearch] = useState("");
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
   const [selectedAlg, setSelectedAlg] = useState<AlgoCase | null>(null);
+  const [dynamicScramble, setDynamicScramble] = useState<string | undefined>(undefined);
 
   const selectedAlgAlgorithms = useMemo(
     () => selectedAlg ? resolveAllAlgorithms(selectedAlg, allCases) : null,
     [selectedAlg, allCases],
   );
+
+  useEffect(() => {
+    if (selectedAlg?.id === "oll-33") {
+      setDynamicScramble(undefined);
+      scrambleService.generateScramble(selectedAlg).then(setDynamicScramble);
+    } else {
+      setDynamicScramble(undefined);
+    }
+  }, [selectedAlg]);
+
+  const handleNewScramble = useCallback(() => {
+    if (!selectedAlg) return;
+    setDynamicScramble(undefined);
+    scrambleService.generateScramble(selectedAlg).then(setDynamicScramble);
+  }, [selectedAlg]);
 
   const filtered = useMemo(() => {
     return allCases.filter((c) => {
@@ -179,6 +196,8 @@ const AlgorithmCategory = () => {
           alg={selectedAlg}
           allAlgorithms={selectedAlgAlgorithms}
           onClose={() => setSelectedAlg(null)}
+          dynamicScramble={dynamicScramble}
+          onNewScramble={selectedAlg.id === "oll-33" ? handleNewScramble : undefined}
         />
       )}
     </div>

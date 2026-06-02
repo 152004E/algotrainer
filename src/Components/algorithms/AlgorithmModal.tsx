@@ -7,6 +7,8 @@ interface Props {
   alg: AlgoCase;
   allAlgorithms?: string[];
   onClose: () => void;
+  dynamicScramble?: string;
+  onNewScramble?: () => void;
 }
 
 const difficultyColors: Record<string, string> = {
@@ -21,7 +23,7 @@ const difficultyLabels: Record<string, string> = {
   Hard: "Difícil",
 };
 
-const AlgorithmModal = ({ alg, allAlgorithms, onClose }: Props) => {
+const AlgorithmModal = ({ alg, allAlgorithms, onClose, dynamicScramble, onNewScramble }: Props) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const allAlgs = useMemo(
     () => allAlgorithms ?? [alg.algorithm, ...(alg.alternatives ?? [])],
@@ -30,12 +32,13 @@ const AlgorithmModal = ({ alg, allAlgorithms, onClose }: Props) => {
   const [selectedIdx, setSelectedIdx] = useState(0);
 
   const setupAlg = useMemo(() => {
+    if (dynamicScramble !== undefined) return dynamicScramble;
     try {
       return new Alg(alg.algorithm).invert().toString();
     } catch {
       return "";
     }
-  }, [alg.algorithm]);
+  }, [alg.algorithm, dynamicScramble]);
 
   const solutionAlg = useMemo(() => {
     return allAlgs[selectedIdx];
@@ -117,6 +120,15 @@ const AlgorithmModal = ({ alg, allAlgorithms, onClose }: Props) => {
             <div className="font-mono text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-600 dark:text-slate-400 break-all mt-2">
               {setupAlg}
             </div>
+            {onNewScramble && (
+              <button
+                type="button"
+                onClick={onNewScramble}
+                className="mt-2 w-full text-sm font-medium px-4 py-2 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors"
+              >
+                🔄 Nuevo Scramble
+              </button>
+            )}
 
           </div>
 
