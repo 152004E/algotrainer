@@ -55,7 +55,7 @@ export const algorithmCategories: AlgorithmCategory[] = [
     lightGradient: "from-red-50 to-red-100",
     count: 21,
     filters: [
-      { key: "difficulty", label: "Dificultad", values: ["Easy", "Medium", "Hard"] },
+      { key: "edgeGroup", label: "Grupo", values: ["edges", "corners", "both"] },
     ],
   },
   {

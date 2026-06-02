@@ -17,6 +17,8 @@ const filterLabels: Record<string, Record<string, string>> = {
     line: "Dos aristas orientadas (Línea)",
     none: "Ninguna arista orientada",
     corners: "Todas las esquinas orientadas",
+    edges: "Solo Aristas (EPLL)",
+    both: "Aristas y Esquinas",
   },
 };
 

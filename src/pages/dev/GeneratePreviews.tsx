@@ -1,15 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import "cubing/twisty";
 import { Alg } from "cubing/alg";
+import PLLCases from "../../data/PLLCases";
 
-interface WVCase {
+interface GenCase {
   id: string;
   name: string;
   shape: string;
   algorithm: string;
 }
 
-const WV_DATASET: WVCase[] = [
+const WV_DATASET: GenCase[] = [
   { id: "wv-01", name: "3 Corners", shape: "Rectangle", algorithm: "L' U2 R U R' U2 L" },
   { id: "wv-02", name: "2 Corners", shape: "Rectangle", algorithm: "U' R' F R U R U' R' F'" },
   { id: "wv-03", name: "2 Corners", shape: "Snake", algorithm: "R U' R'" },
@@ -39,8 +40,21 @@ const WV_DATASET: WVCase[] = [
   { id: "wv-27", name: "0 Corners", shape: "Sune", algorithm: "R U' R' U' R U R' U R U2 R'" },
 ];
 
+const PLL_DATASET: GenCase[] = PLLCases.map((c) => ({
+  id: c.id,
+  name: c.name,
+  shape: c.description ?? "",
+  algorithm: c.algorithm,
+}));
+
+const DATASETS: Record<string, { label: string; data: GenCase[] }> = {
+  wv: { label: "Winter Variation", data: WV_DATASET },
+  pll: { label: "PLL", data: PLL_DATASET },
+};
+
 const GeneratePreviews = () => {
   const playerRef = useRef<any>(null);
+  const [datasetKey, setDatasetKey] = useState<string>("wv");
   const [status, setStatus] = useState<"idle" | "generating" | "done">("idle");
   const [current, setCurrent] = useState("");
   const [progress, setProgress] = useState(0);
@@ -49,17 +63,18 @@ const GeneratePreviews = () => {
   const [ready, setReady] = useState(false);
   const cancelledRef = useRef(false);
 
-  const total = WV_DATASET.length;
+  const dataset = DATASETS[datasetKey].data;
+  const total = dataset.length;
 
   useEffect(() => {
     customElements
       .whenDefined("twisty-player")
       .then(() => {
-        console.log("[WV Generator] twisty-player ready");
+        console.log("[Generator] twisty-player ready");
         setReady(true);
       })
       .catch((err) => {
-        console.error("[WV Generator] Failed:", err);
+        console.error("[Generator] Failed:", err);
       });
   }, []);
 
@@ -82,25 +97,26 @@ const GeneratePreviews = () => {
     el.cameraDistance = 6;
     el.tempoScale = 10;
 
+    const ds = dataset;
     const results: { id: string; url: string }[] = [];
 
-    for (let i = 0; i < total; i++) {
+    for (let i = 0; i < ds.length; i++) {
       if (cancelledRef.current) {
         setStatus("idle");
         return;
       }
 
-      const c = WV_DATASET[i];
+      const c = ds[i];
       setCurrent(`${c.id} — ${c.name} ${c.shape}`);
       setProgress(i + 1);
-      console.log(`[WV Generator] [${i + 1}/${total}] ${c.id} — ${c.algorithm}`);
+      console.log(`[${datasetKey.toUpperCase()} Generator] [${i + 1}/${ds.length}] ${c.id} — ${c.algorithm}`);
 
       try {
         const inverseAlg = new Alg(c.algorithm).invert();
-        const inverseStr = inverseAlg.toString();
-        console.log(`[WV Generator]   setup: ${inverseStr}`);
+        const setupStr = inverseAlg.toString();
+        console.log(`[${datasetKey.toUpperCase()} Generator]   setup: ${setupStr}`);
 
-        el.experimentalSetupAlg = inverseStr;
+        el.experimentalSetupAlg = setupStr;
         el.experimentalSetupAnchor = "start";
         el.alg = "";
 
@@ -111,22 +127,22 @@ const GeneratePreviews = () => {
         if (typeof url === "string" && url.startsWith("data:image")) {
           results.push({ id: `${c.id}.png`, url });
           setImages([...results]);
-          console.log(`[WV Generator] ✓ ${c.id}`);
+          console.log(`[${datasetKey.toUpperCase()} Generator] ✓ ${c.id}`);
         } else {
           throw new Error("Invalid screenshot result");
         }
       } catch (err) {
         const msg = `${c.id}: ${err instanceof Error ? err.message : String(err)}`;
-        console.error(`[WV Generator] ✗ ${c.id} —`, err);
+        console.error(`[${datasetKey.toUpperCase()} Generator] ✗ ${c.id} —`, err);
         setErrors((prev) => [...prev, msg]);
       }
 
       await new Promise((r) => setTimeout(r, 150));
     }
 
-    console.log(`[WV Generator] Done. ${results.length}/${total} generated`);
+    console.log(`[${datasetKey.toUpperCase()} Generator] Done. ${results.length}/${ds.length} generated`);
     setStatus("done");
-  }, [total]);
+  }, [datasetKey]);
 
   const downloadAll = useCallback(() => {
     images.forEach((img, i) => {
@@ -138,16 +154,42 @@ const GeneratePreviews = () => {
   }, [images]);
 
   const progressPct = total > 0 ? Math.round((progress / total) * 100) : 0;
+  const label = DATASETS[datasetKey].label;
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       <div className="max-w-5xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-          WV Preview Generator
+          Preview Generator
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mb-8">
-          Generating {total} Winter Variation case previews via inverse setup
+          Generating {total} {label} case previews via inverse setup
         </p>
+
+        <div className="flex gap-2 mb-6">
+          {Object.entries(DATASETS).map(([key, ds]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => {
+                if (status !== "generating") {
+                  setDatasetKey(key);
+                  setImages([]);
+                  setErrors([]);
+                  setStatus("idle");
+                }
+              }}
+              disabled={status === "generating"}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition ${
+                datasetKey === key
+                  ? "bg-blue-500 text-white"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+            >
+              {ds.label}
+            </button>
+          ))}
+        </div>
 
         <div className="flex gap-4 mb-8 items-center">
           <button
@@ -157,7 +199,7 @@ const GeneratePreviews = () => {
             className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl transition"
           >
             {status === "idle"
-              ? "Generate WV Previews"
+              ? `Generate ${label} Previews`
               : status === "generating"
                 ? "Generating..."
                 : "Regenerate"}
