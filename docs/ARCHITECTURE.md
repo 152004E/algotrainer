@@ -5,7 +5,10 @@
 - **TailwindCSS v4** (via `@tailwindcss/vite`, NOT PostCSS)
 - **React Router v7**
 - **FontAwesome** (react-fontawesome for icons)
-- **cubing.js** (3x3x3 interactive cube in Hero)
+- **cubing.js** — `cubing/puzzles`, `cubing/kpuzzle`, `cubing/search`, `cubing/alg`
+  - 3x3x3 interactive cube in Hero
+  - KPattern + KTransformation for cube state
+  - `solveTwips` for dynamic scramble generation
 - **No state management** — local state + props only
 
 ## Directory Structure
@@ -58,39 +61,62 @@ src/
 │   │   ├── TrainerSidebar.tsx   Left sidebar: session stats [PLACEHOLDER]
 │   │   ├── TrainerTabs.tsx      Top tabs: F2L / WV / MW / OLL / PLL [NON-FUNCTIONAL]
 │   │   ├── TrainerToolsSidebar.tsx Right sidebar: help & shortcuts [PLACEHOLDER]
-│   │   ├── CubeViewer.tsx       [PLACEHOLDER - see CubeHero for cubing.js integration]
-│   │   ├── ScrambleBox.tsx      Displays scramble string
+│   │   ├── CubeViewer.tsx       [PLACEHOLDER - will show twisty-player with scramble]
+│   │   ├── ScrambleBox.tsx      Displays scramble string (accepts loading prop)
 │   │   ├── AlgorithmBox.tsx     Displays algorithm string
 │   │   └── NextCaseButton.tsx   Next case button
+│   │
+│   ├── algorithms/
+│   │   ├── AlgorithmCard.tsx    Algorithm browse card (shows mezcla + solución)
+│   │   ├── AlgorithmModal.tsx   Detail modal with cube viewer + variants
+│   │   └── CubeViewer.tsx       cubing.js twisty-player wrapper with controls
 │   │
 │   └── Modals/
 │       └── TrainerModal.tsx     Modal showing algorithm selection grid
 │
+├── utils/
+│   ├── scambleService.ts       [PLANNED] Dynamic scramble generation
+│   ├── derivePattern.ts        [PLANNED] Setup alg → KPattern conversion
+│   ├── resolveVariants.ts      Algorithm variant resolution
+│   └── mirrorAlgorithm.ts      Mirror transformation for ergonomic pairs
+│
+├── hooks/
+│   ├── useTrainer.ts           Basic trainer logic (fixed scrambles)
+│   └── useScrambledTrainer.ts [PLANNED] Trainer with dynamic scrambles
+│
 └── data/
-    ├── WVCases.ts              Winter Variation cases [EMPTY]
-    ├── MWCases.ts              Magic Wonderful cases [EMPTY]
-    └── f2lCases.ts             F2L cases [EMPTY]
-    (OLLCases.ts & PLLCases.ts missing)
+    ├── WVCases.ts              Winter Variation cases [POPULATED]
+    ├── MWCases.ts              Magic Wonderful cases [POPULATED]
+    ├── f2lCases.ts             F2L cases [POPULATED]
+    ├── OLLCases.ts             OLL 57 cases [POPULATED]
+    └── PLLCases.ts             PLL 21 cases [POPULATED]
+
+scripts/
+└── validateScrambleGeneration.ts    Math correctness validation script
 ```
 
 ## Current Route Map
 
 All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` which allows the application to compile successfully on case-sensitive systems (such as Linux).
 
-| Route | Component File (Target) | Status | Details |
-|-------|--------------------------|--------|---------|
-| `/` | `src/pages/Home.tsx` | ✓ Working | Page renders correctly and build passes. |
-| `/trainer/wv` | `src/pages/trainer/WVTrainer.tsx` | ⚠️ BUG | Incorrectly imports from `MWTrainer.tsx` (which exports the `WVTrainer` component). |
-| `/trainer/mw` | `src/pages/trainer/MWTrainer.tsx` | ⚠️ BUG | Incorrectly maps to the `OLLTrainer` component. |
-| `/trainer/oll` | `src/pages/trainer/OLLTrainer.tsx` | ✓ Working | Renders the OLL trainer view correctly. |
-| `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | Renders the PLL trainer view correctly. |
-| `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ❌ Missing | No route defined in `App.tsx` and the component file is currently empty. |
-| `/algorithms` | Not defined | ❌ Missing | Linked in `Navbar.tsx` but no route or page component exists. |
-| `/about` | Not defined | ❌ Missing | Linked in `Navbar.tsx` but no route or page component exists. |
+| Route | Component | Status | Details |
+|-------|-----------|--------|---------|
+| `/` | `src/pages/Home.tsx` | ✓ Working | Landing page |
+| `/trainer/wv` | `src/pages/trainer/WVTrainer.tsx` | ✓ Fixed | WV trainer |
+| `/trainer/mw` | `src/pages/trainer/MWTrainer.tsx` | ✓ Fixed | MW trainer |
+| `/trainer/oll` | `src/pages/trainer/OLLTrainer.tsx` | ✓ Working | OLL trainer |
+| `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | PLL trainer |
+| `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ✓ Fixed | F2L trainer |
+| `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser |
+| `/algorithms/pll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | PLL algorithm browser |
+| `/algorithms/wv` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | WV algorithm browser |
+| `/algorithms/mw` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | MW algorithm browser |
+| `/algorithms/f2l` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | F2L algorithm browser |
+| `/about` | Not defined | ❌ Missing | Linked in Navbar but no route/page |
 
 ## Data Flow
 
-### Current (Hardcoded)
+### Phase 1 (Hardcoded scrambles)
 ```
 Trainer Page
   ├─ ScrambleBox(scramble: "R U R' U'")  [static string]
@@ -99,7 +125,7 @@ Trainer Page
   └─ NextCaseButton(onNext: () => {})     [logs to console]
 ```
 
-### Target (Dynamic)
+### Phase 2 (Dynamic with single scramble)
 ```
 useTrainer(cases: AlgoCase[])
   ├─ currentCase: AlgoCase
@@ -112,6 +138,28 @@ Trainer Page
   ├─ AlgorithmBox(algorithm: currentCase.algorithm, revealed: bool)
   ├─ NextCaseButton(onNext: nextCase)
   └─ TrainerSidebar(stats: sessionStats)
+```
+
+### Phase 3 (Dynamic scramble generation — current target)
+```
+ScrambleService (singleton, init on app load)
+  └─ generateScramble(caseData) → string
+
+useScrambledTrainer(cases: AlgoCase[])
+  ├─ currentCase: AlgoCase
+  ├─ scramble: string                    [generated fresh each time]
+  ├─ loading: boolean                    [while scramble generates]
+  ├─ revealed: boolean
+  ├─ nextCase(): void
+  ├─ revealAlgorithm(): void
+  └─ stats: SessionStats
+
+Trainer Page
+  ├─ ScrambleBox(scramble, loading)       [shows skeleton while loading]
+  ├─ CubeViewer(scramble)                 [twisty-player with setup]
+  ├─ AlgorithmBox(algorithm, revealed)
+  ├─ NextCaseButton(onNext)
+  └─ TrainerSidebar(stats)
 ```
 
 ## Component Hierarchy

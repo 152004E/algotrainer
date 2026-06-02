@@ -1,7 +1,43 @@
 # AlgoTrainer — Plan de Implementación
 
 ## Estado Actual
-MVP skeleton: rutas, layouts, componentes de UI sin lógica real. Datos vacíos. Cube viewer es placeholder.
+Rutas y datos funcionales. OLL/PLL/MW/WV/F2L poblados. Algoritmo de
+generación dinámica de scrambles validado (120/120 tests).
+Pendiente: integrar el servicio en el trainer y reemplazar
+CubeViewer mockup.
+
+---
+
+## Prioridad 0 — Scramble Generation System (VALIDADO)
+
+- [x] **`src/utils/scrambleService.ts`**: 188/188 pattern + 188/188 clean
+  - Usa Kociemba (min2phase) composition: `pert + invert(pert) + solvedToTarget`
+  - Para F2L con `y` en datos: centra centros, Kociemba, añade rotación al final
+  - WV usa `invert(algorithm)` como effectiveSetup
+  - Cachea KPuzzle + target patterns por caseId
+
+- [ ] **Crear `src/hooks/useScrambledTrainer.ts`**
+  - Wrapper sobre `scrambleService.generateScramble()`
+  - Estados: `loading`, `scramble`, `currentCase`, `revealed`
+  - `nextCase()` → trigger nueva generación asíncrona + loading skeleton
+  - Expone `stats: SessionStats`
+
+- [ ] **Reemplazar `Components/trainer/CubeViewer.tsx`**
+  - Mockup div → twisty-player real
+  - Props: `scramble: string`, `algorithm?: string`
+  - `experimentalSetupAlg = scramble`, `experimentalSetupAnchor = "start"`
+
+- [ ] **Actualizar `ScrambleBox.tsx`**
+  - Aceptar prop `loading: boolean`
+  - Mostrar skeleton animation mientras genera
+
+- [ ] **Actualizar trainers** (OLL/PLL/MW/WV/F2L)
+  - Usar `useScrambledTrainer` en lugar de `useTrainer`
+  - Pasar `scramble` + `loading` a `ScrambleBox` y `CubeViewer`
+
+- [ ] **Migrar AlgorithmCard + AlgorithmModal**
+  - Usar scramble generado en lugar de invertir algorithm
+  - Mantener datos actuales sin cambios
 
 ---
 

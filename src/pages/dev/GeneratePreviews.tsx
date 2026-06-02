@@ -44,7 +44,7 @@ const PLL_DATASET: GenCase[] = PLLCases.map((c) => ({
   id: c.id,
   name: c.name,
   shape: c.description ?? "",
-  algorithm: c.algorithm,
+  algorithm: c.scramble.trim(),
 }));
 
 const DATASETS: Record<string, { label: string; data: GenCase[] }> = {
@@ -112,8 +112,10 @@ const GeneratePreviews = () => {
       console.log(`[${datasetKey.toUpperCase()} Generator] [${i + 1}/${ds.length}] ${c.id} — ${c.algorithm}`);
 
       try {
-        const inverseAlg = new Alg(c.algorithm).invert();
-        const setupStr = inverseAlg.toString();
+        const setupAlg = datasetKey === "pll"
+          ? new Alg(c.algorithm)
+          : new Alg(c.algorithm).invert();
+        const setupStr = setupAlg.toString();
         console.log(`[${datasetKey.toUpperCase()} Generator]   setup: ${setupStr}`);
 
         el.experimentalSetupAlg = setupStr;
