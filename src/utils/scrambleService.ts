@@ -134,9 +134,9 @@ export class ScrambleService {
   async generateScramble(c: AlgoCase): Promise<string> {
     const { target, correction } = await this.prepareTarget(c);
 
-    // --- OLL 33 PLL variation: pick random PLL, build target ---
+    // --- OLL PLL variation: pick random PLL, build target ---
     let scrambleTarget = target;
-    if (c.id === "oll-33") {
+    if (c.id.startsWith("oll-")) {
       const pllAlgs: { name: string; alg: string }[] = [
         { name: "skip", alg: "" },
         { name: "Ua",   alg: "R U' R U R U R U' R' U' R2" },
@@ -194,8 +194,8 @@ export class ScrambleService {
       return this.generateScramble(c);
     }
 
-    // Length constraint: max 20 moves (OLL 33 only — controlled test)
-    if (c.id === "oll-33") {
+    // Length constraint: max 20 moves for all OLL PLL variation cases
+    if (c.id.startsWith("oll-")) {
       const len = scramble.trim().split(/\s+/).filter(Boolean).length;
       if (len > 20) {
         return this.generateScramble(c);

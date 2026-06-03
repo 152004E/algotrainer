@@ -64,7 +64,7 @@ const AlgorithmCategory = () => {
   );
 
   useEffect(() => {
-    if (selectedAlg?.id === "oll-33") {
+    if (selectedAlg?.id.startsWith("oll-")) {
       setDynamicScramble(undefined);
       scrambleService.generateScramble(selectedAlg).then(setDynamicScramble);
     } else {
@@ -197,7 +197,7 @@ const AlgorithmCategory = () => {
           allAlgorithms={selectedAlgAlgorithms}
           onClose={() => setSelectedAlg(null)}
           dynamicScramble={dynamicScramble}
-          onNewScramble={selectedAlg.id === "oll-33" ? handleNewScramble : undefined}
+          onNewScramble={selectedAlg.id.startsWith("oll-") ? handleNewScramble : undefined}
         />
       )}
     </div>

@@ -92,8 +92,10 @@ src/
     └── PLLCases.ts             PLL 21 cases [POPULATED]
 
 scripts/
-├── validateCleanScrambles.ts       564/564 pattern + clean (todos subsets)
-└── validateScrambleDiversity.ts    OLL 33 uniqueness + D-equivalence
+├── validateCleanScrambles.ts               OLL 33: 500 scrambles, orientation + clean
+├── validateCleanScramblesOLL{34,46,51,52,55,56}.ts  OLL específicos, 500 scrambles c/u
+├── validateScrambleDiversity.ts             OLL 33 uniqueness + D-equivalence
+└── validateScrambleGeneration.ts            General: 5 subsets, 20 iteraciones c/u
 ```
 
 ## Current Route Map
@@ -108,7 +110,7 @@ All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` 
 | `/trainer/oll` | `src/pages/trainer/OLLTrainer.tsx` | ✓ Working | OLL trainer |
 | `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | PLL trainer |
 | `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ✓ Fixed | F2L trainer |
-| `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser |
+| `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser, PLL variation en 57/57 OLLs |
 | `/algorithms/pll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | PLL algorithm browser |
 | `/algorithms/wv` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | WV algorithm browser |
 | `/algorithms/mw` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | MW algorithm browser |
@@ -151,12 +153,12 @@ ScrambleService (singleton)
       └─ solveMin2Phase(target.applyAlg(pert)) → invert → solvedToPerturbed
       └─ scramble = simplifyMoves([solvedToPerturbed, invert(pert)].join(" "))
 
-AlgorithmCategory (for OLL 33 currently)
+AlgorithmCategory (for all 57 OLLs)
   ├─ dynamicScramble: string | undefined
-  ├─ handleNewScramble: () => void
+  ├─ handleNewScramble: () => void       [activado si id.startsWith("oll-")]
   └─ AlgorithmModal(dynamicScramble, onNewScramble)
     ├─ CubeViewer(setupAlg)               [twisty-player with scramble]
-    └─ Button "Nuevo Scramble"
+    └─ Button "Nuevo Scramble"            [visible en todos los OLLs]
 
 useScrambledTrainer(cases: AlgoCase[])
   ├─ currentCase: AlgoCase

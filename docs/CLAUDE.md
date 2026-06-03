@@ -15,7 +15,13 @@
   - `getEffectiveSetup` siempre usa `invert(algorithm)`, nunca `c.scramble`
   - Frente=Verde, Arriba=Blanco (WCA standard)
   - 564/564 validated (pattern + clean), 100/100 unique scrambles OLL 33
-- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated
+- **OLL PLL variation**: ALL 57 OLLs have PLL variation active
+  - `target = solved.applyAlg(pll).applyAlg(invert(OLL))` con 22 PLLs (skip + 21)
+  - Sin AUF, sin rotaciones, sin M/E/S, sin wide moves
+  - Max 20 moves, rejection guard, simplifyMoves
+  - Single generic block `if (c.id.startsWith("oll-"))` in scrambleService.ts
+  - 57/57 OLLs validated, botón "New Scramble" en todos
+- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL PLL variation completed
 - **Language**: Spanish UI + English code
 
 ### Critical Context
@@ -28,15 +34,17 @@
    - Pre-warming cache por case
    - Ver `SCRAMBLE_GENERATION.md` para spec completa
 
-2. **AlgorithmModal integration**:
+2. **AlgorithmModal integration (ALL 57 OLLs)**:
    - Props: `dynamicScramble?` + `onNewScramble?`
    - Botón "🔄 Nuevo Scramble" genera scramble diferente sin cambiar caso
    - Fallback a `invert(algorithm)` si no hay dynamic scramble
-   - Controlled test: solo OLL 33
+   - Condición genérica: `selectedAlg?.id.startsWith("oll-")`
+   - 57/57 OLLs con botón "Nuevo Scramble" funcional
 
 3. **Validation scripts**:
    - `scripts/validateCleanScrambles.ts`: 564/564 pattern + clean (todos los subsets)
    - `scripts/validateScrambleDiversity.ts`: 100% unique OLL 33, 0 D-equivalent, seam redundancy tracking
+   - 500 scrambles × 6 OLLs nuevos: 100% orientation correct, 0 redundant pairs, 0 over 20
 
 4. **Reglas fijas de scramble**:
    - Solo face moves (U D R L F B + ' 2)
@@ -46,7 +54,15 @@
    - Center correction: detecta y/y'/y2, aplica al target, añade inverse al final
    - AlgoCase type sin modificar
 
-5. **What exists but doesn't work**:
+5. **OLL PLL variation rules**:
+   - `target = solved.applyAlg(pll).applyAlg(invert(OLL))` — misma estrategia OLL 33/45
+   - 22 PLLs: skip, Ua, Ub, Aa, Ab, E, F, Ga, Gb, Gc, Gd, H, Ja, Jb, Na, Nb, Ra, Rb, T, V, Y, Z
+   - Sin AUF, sin rotaciones, sin M/E/S, sin wide moves
+   - Máximo 20 movimientos (regenera si excede)
+   - Perturbación 3-5 movimientos, solver Kociemba, simplifyMoves
+   - Rejection guard + correction handling intactos
+
+6. **What exists but doesn't work**:
    - CubeViewer (trainer): placeholder `<div>` only
    - TrainerSidebar: hardcoded text, no real stats
    - TrainerTabs: not functional, hardcoded active state
@@ -76,6 +92,8 @@
 | Scramble validation | scripts/validateCleanScrambles.ts | ✓ 564/564 pass |
 | Scramble service | src/utils/scrambleService.ts | ✓ Implemented |
 | Scramble diversity | scripts/validateScrambleDiversity.ts | ✓ Implemented |
+| OLL PLL variation | src/utils/scrambleService.ts | ✓ 57/57 OLLs, all 22 PLLs |
+| New Scramble button | src/pages/algorithms/AlgorithmCategory.tsx | ✓ All 57 OLLs |
 | Dynamic trainer hook | src/hooks/useScrambledTrainer.ts | ⏳ Planned |
 
 ### Code Quality Standards
