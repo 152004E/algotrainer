@@ -55,7 +55,32 @@ export const algorithmCategories: AlgorithmCategory[] = [
     lightGradient: "from-red-50 to-red-100",
     count: 21,
     filters: [
-      { key: "edgeGroup", label: "Grupo", values: ["edges", "corners", "both"] },
+      {
+        key: "edgeGroup",
+        label: "Grupo",
+        values: ["edges", "corners", "both"],
+        dependent: {
+          key: "shapeGroup",
+          label: "Letra",
+          options: {
+            edges: [],
+            corners: [],
+            both: ["f", "y", "t", "j", "r", "n", "g", "v"],
+          },
+          labels: {
+            both: {
+              f: "F",
+              y: "Y",
+              t: "T",
+              j: "J",
+              r: "R",
+              n: "N",
+              g: "G",
+              v: "V",
+            },
+          },
+        },
+      },
     ],
   },
   {

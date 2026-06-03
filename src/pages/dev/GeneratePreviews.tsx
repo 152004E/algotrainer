@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import "cubing/twisty";
 import { Alg } from "cubing/alg";
-import PLLCases from "../../data/PLLCases";
 
 interface GenCase {
   id: string;
@@ -40,31 +39,55 @@ const WV_DATASET: GenCase[] = [
   { id: "wv-27", name: "0 Corners", shape: "Sune", algorithm: "R U' R' U' R U R' U R U2 R'" },
 ];
 
-const PLL_DATASET: GenCase[] = PLLCases.map((c) => ({
-  id: c.id,
-  name: c.name,
-  shape: c.description ?? "",
-  algorithm: c.scramble.trim(),
-}));
+const EDGE_PLL_DATASET: GenCase[] = [
+  {
+    id: "pll-h",
+    name: "H Perm",
+    shape: "Opposite edge swap",
+    algorithm: "M2' U M2' U2 M2' U M2'",
+  },
+  {
+    id: "pll-ua",
+    name: "Ua Perm",
+    shape: "Edge cycle (clockwise)",
+    algorithm: "R U R' U R' U' R2 U' R' U R' U R U2",
+  },
+  {
+    id: "pll-ub",
+    name: "Ub Perm",
+    shape: "Edge cycle (counter-clockwise)",
+    algorithm: "R' U R' U' R' U' R' U R U R2",
+  },
+  {
+    id: "pll-z",
+    name: "Z Perm",
+    shape: "Adjacent edge swap",
+    algorithm: "M' U M2' U M2' U M' U2 M2'",
+  },
+];
 
 const DATASETS: Record<string, { label: string; data: GenCase[] }> = {
   wv: { label: "Winter Variation", data: WV_DATASET },
-  pll: { label: "PLL", data: PLL_DATASET },
+  edgepll: { label: "Edge PLL", data: EDGE_PLL_DATASET },
 };
 
 const GeneratePreviews = () => {
   const playerRef = useRef<any>(null);
-  const [datasetKey, setDatasetKey] = useState<string>("wv");
+  const [datasetKey, setDatasetKey] = useState<string>("edgepll");
   const [status, setStatus] = useState<"idle" | "generating" | "done">("idle");
   const [current, setCurrent] = useState("");
   const [progress, setProgress] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
   const [images, setImages] = useState<{ id: string; url: string }[]>([]);
   const [ready, setReady] = useState(false);
+  const [filter, setFilter] = useState("pll-h, pll-ua, pll-ub, pll-z");
   const cancelledRef = useRef(false);
 
   const dataset = DATASETS[datasetKey].data;
-  const total = dataset.length;
+  const filtered = filter.trim()
+    ? dataset.filter((c) => filter.split(",").map((s) => s.trim()).includes(c.id))
+    : dataset;
+  const total = filtered.length;
 
   useEffect(() => {
     customElements
@@ -92,12 +115,12 @@ const GeneratePreviews = () => {
     el.controlPanel = "none";
     el.viewerLink = "none";
     el.hintFacelets = "none";
-    el.cameraLatitude = 35;
-    el.cameraLongitude = 30;
+    el.cameraLatitude = 25;
+    el.cameraLongitude = 45;
     el.cameraDistance = 6;
     el.tempoScale = 10;
 
-    const ds = dataset;
+    const ds = filtered;
     const results: { id: string; url: string }[] = [];
 
     for (let i = 0; i < ds.length; i++) {
@@ -112,9 +135,7 @@ const GeneratePreviews = () => {
       console.log(`[${datasetKey.toUpperCase()} Generator] [${i + 1}/${ds.length}] ${c.id} — ${c.algorithm}`);
 
       try {
-        const setupAlg = datasetKey === "pll"
-          ? new Alg(c.algorithm)
-          : new Alg(c.algorithm).invert();
+        let setupAlg = new Alg("y'").concat(new Alg(c.algorithm).invert()).concat(new Alg("y"));
         const setupStr = setupAlg.toString();
         console.log(`[${datasetKey.toUpperCase()} Generator]   setup: ${setupStr}`);
 
@@ -193,6 +214,19 @@ const GeneratePreviews = () => {
           ))}
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">
+            Filter (comma-separated IDs, empty = all)
+          </label>
+          <input
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="pll-ua, pll-ub, pll-z"
+            className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
+          />
+        </div>
+
         <div className="flex gap-4 mb-8 items-center">
           <button
             type="button"
@@ -201,7 +235,7 @@ const GeneratePreviews = () => {
             className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl transition"
           >
             {status === "idle"
-              ? `Generate ${label} Previews`
+              ? `Generate ${label} Previews (${total})`
               : status === "generating"
                 ? "Generating..."
                 : "Regenerate"}
