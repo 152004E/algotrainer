@@ -7,19 +7,21 @@ interface Props {
   category: AlgorithmCategory;
 }
 
-const MiniCube = () => {
+const MiniCube = ({ slug }: { slug: string }) => {
   const ref = useRef<any>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.alg = "R U R' U R U2' R' . R U2 R' U' R U' R'";
+    el.alg = slug === "pll"
+      ? "M2 U' M2 U2' M2 U' M2 . M2 U' M2 U2' M2 U' M2"
+      : "R U R' U R U2' R' . R U2 R' U' R U' R'";
     const t = setTimeout(() => {
       try {
         el.controller.animationController.play({ loop: true });
       } catch {}
     }, 500);
     return () => clearTimeout(t);
-  }, []);
+  }, [slug]);
   return (
     <twisty-player
       ref={ref}
@@ -51,8 +53,8 @@ const AlgorithmCategoryCard = ({ category }: Props) => {
           <div
             className={`w-16 h-16 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white text-xl shadow-lg`}
           >
-            {category.slug === "oll" ? (
-              <MiniCube />
+            {category.slug === "oll" || category.slug === "pll" ? (
+              <MiniCube slug={category.slug} />
             ) : (
               category.icon
             )}

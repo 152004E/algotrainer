@@ -15,8 +15,8 @@ const PLLCases: AlgoCase[] = [
     optimalMoves: "10 HTM, 7 STM",
     alternatives: [
       "M2' U' M2' U2' M2' U' M2'",
-      "M2' U2 M2' U M2' U2 M2'",
-      "M2' U2 M2' U' M2' U' M2'",
+      "M2' U2 M2' U M2' U2 M2' U'",
+      
     ],
   },
   {
