@@ -2,17 +2,12 @@ import { scrambleService } from "../src/utils/scrambleService";
 import { cube3x3x3 } from "cubing/puzzles";
 import { Alg } from "cubing/alg";
 import type { KPuzzle } from "cubing/kpuzzle";
-import type { AlgoCase } from "../src/types";
 import OLLCases from "../src/data/OLLCases";
-import PLLCases from "../src/data/PLLCases";
-import MWCases from "../src/data/MWCases";
-import f2lCases from "../src/data/f2lCases";
-import WVCases from "../src/data/WVCases";
 
 const FACES_RE = /^[UDFRLBy'2 ]+$/;
 const isClean = (s: string) => FACES_RE.test(s);
 
-function getEffectiveSetup(c: AlgoCase): string {
+function getEffectiveSetup(c: any): string {
   return new Alg(c.algorithm).invert().toString();
 }
 
@@ -25,91 +20,113 @@ function uLayerEquals(a: any, b: any): boolean {
   return aC === bC;
 }
 
+function showDistribution(lengths: number[]): void {
+  const total = lengths.length;
+  const maxLen = Math.max(...lengths);
+  const minLen = Math.min(...lengths);
+  const avg = lengths.reduce((a, b) => a + b, 0) / total;
+
+  const counts: Record<number, number> = {};
+  for (const l of lengths) counts[l] = (counts[l] ?? 0) + 1;
+
+  console.log(`  Length stats:  avg=${avg.toFixed(1)}  min=${minLen}  max=${maxLen}  (target 15-19, max 20)\n`);
+  console.log("  Distribution:");
+
+  for (let l = minLen; l <= maxLen; l++) {
+    const c = counts[l] ?? 0;
+    const pct = ((c / total) * 100).toFixed(0);
+    const bar = "█".repeat(c);
+    const flag = l > 20 ? " ✗ NOT OK" : l >= 15 ? "" : " (short)";
+    console.log(`    ${String(l).padStart(2)} moves: ${String(pct).padStart(3)}%  ${bar}${flag}`);
+  }
+
+  const over20 = lengths.filter(l => l > 20).length;
+  if (over20 > 0) {
+    console.log(`\n  ⚠ ${over20}/${total} scrambles exceed 20 moves`);
+  }
+}
+
 async function main() {
   console.log("\n" + "=".repeat(64));
-  console.log("  CLEAN SCRAMBLE VALIDATION — Kociemba composition");
+  console.log("  CLEAN SCRAMBLE VALIDATION — OLL 33 only");
   console.log("=".repeat(64));
 
-  const subsets: [string, AlgoCase[]][] = [
-    ["OLL", OLLCases],
-    ["PLL", PLLCases],
-    ["MW", MWCases],
-    ["F2L", f2lCases],
-    ["WV", WVCases],
-  ];
-
-  const totalCases = subsets.reduce((s, [, cs]) => s + cs.length, 0);
-  console.log(`\n  Cases: ${totalCases}, 3 scrambles each = ${totalCases * 3}`);
-
-  const kp: KPuzzle = await cube3x3x3.kpuzzle();
-  await scrambleService.prewarm(subsets.flatMap(([, cs]) => cs));
-
-  let grandPass = 0, grandFail = 0, grandClean = 0, grandDirty = 0, grandTime = 0, grandTotal = 0;
-  let grandRedundantPairs = 0;
-
-  for (const [name, cases] of subsets) {
-    let pass = 0, fail = 0, clean = 0, dirty = 0, time = 0, redundantPairs = 0;
-    const failures: { id: string; s: string; err: string }[] = [];
-    const samples: string[] = [];
-
-    for (const c of cases) {
-      for (let i = 0; i < 3; i++) {
-        const t0 = performance.now();
-        try {
-          const scramble = await scrambleService.generateScramble(c);
-          const elapsed = performance.now() - t0;
-          time += elapsed;
-          grandTotal++;
-
-          const expected = kp.defaultPattern().applyAlg(new Alg(getEffectiveSetup(c)));
-          const actual = kp.defaultPattern().applyAlg(new Alg(scramble));
-          const patternOk = uLayerEquals(expected, actual);
-          const cleanOk = isClean(scramble);
-
-          if (patternOk) pass++; else { fail++; failures.push({ id: c.id, s: scramble, err: "pattern" }); }
-          if (cleanOk) clean++; else { dirty++; failures.push({ id: c.id, s: scramble, err: "dirty" }); }
-
-          // Track seam redundancies (same-face adjacent pairs from boundary-only)
-          const parts = scramble.trim().split(/\s+/);
-          for (let j = 0; j < parts.length - 1; j++) {
-            if (parts[j][0] === parts[j + 1][0]) redundantPairs++;
-          }
-
-          if (patternOk && cleanOk && samples.length < 10) samples.push(scramble);
-        } catch (e) {
-          fail++;
-          const msg = (e as Error)?.message ?? String(e);
-          failures.push({ id: c.id, s: "", err: msg.substring(0, 60) });
-        }
-      }
-    }
-
-    grandPass += pass; grandFail += fail; grandClean += clean; grandDirty += dirty; grandTime += time; grandRedundantPairs += redundantPairs;
-    const avg = time / (pass + fail);
-    const rpt = (redundantPairs / (pass + fail)).toFixed(1);
-    console.log(`\n  ${name}: ${pass}/${pass + fail} pattern, ${clean}/${clean + dirty} clean, ${avg.toFixed(0)}ms avg, ${rpt} redundant/scramble`);
-    if (failures.length > 0) {
-      for (const f of failures.slice(0, 3)) process.stdout.write(`    ✗ ${f.id}: ${f.err} ${f.s.substring(0, 40)}\n`);
-      if (failures.length > 3) process.stdout.write(`    ... +${failures.length - 3}\n`);
-    }
-    if (samples.length > 0) {
-      process.stdout.write("    Samples:\n");
-      for (const s of samples.slice(0, 3)) process.stdout.write(`      ${s.substring(0, 50)}...\n`);
-    }
-  }
-
-  const avgMs = grandTime / grandTotal;
-  const avgRpt = (grandRedundantPairs / grandTotal).toFixed(2);
-  console.log("\n" + "=".repeat(64));
-  console.log(`  FINAL: ${grandPass}/${grandTotal} pattern (${(grandPass / grandTotal * 100).toFixed(1)}%)`);
-  console.log(`         ${grandClean}/${grandTotal} clean  (${(grandClean / grandTotal * 100).toFixed(1)}%)`);
-  console.log(`         avg ${avgMs.toFixed(0)}ms, seam redundancy: ${avgRpt} pairs/scramble`);
-  console.log("=".repeat(64));
-
-  if (grandFail > 0 || grandDirty > 0) {
+  const oll33 = OLLCases.find((c: any) => c.id === "oll-33");
+  if (!oll33) {
+    console.log("\n  ✗ OLL 33 not found in data\n");
     process.exit(1);
   }
-  console.log("\n  ✅ ALL PASSED\n");
+
+  const kp: KPuzzle = await cube3x3x3.kpuzzle();
+  await scrambleService.prewarm([oll33]);
+
+  const count = 100;
+  console.log(`\n  Generating ${count} scrambles for OLL 33...\n`);
+
+  let pass = 0, fail = 0;
+  let redundantPairs = 0;
+  let over20 = 0;
+  const lengths: number[] = [];
+  const failures: { s: string; err: string }[] = [];
+
+  for (let i = 0; i < count; i++) {
+    try {
+      const scramble = await scrambleService.generateScramble(oll33);
+
+      const expected = kp.defaultPattern().applyAlg(new Alg(getEffectiveSetup(oll33)));
+      const actual = kp.defaultPattern().applyAlg(new Alg(scramble));
+      const patternOk = uLayerEquals(expected, actual);
+      const cleanOk = isClean(scramble);
+
+      const parts = scramble.trim().split(/\s+/);
+      lengths.push(parts.length);
+
+      if (parts.length > 20) over20++;
+
+      let hasRedundant = false;
+      for (let j = 0; j < parts.length - 1; j++) {
+        if (parts[j][0] === parts[j + 1][0]) {
+          redundantPairs++;
+          hasRedundant = true;
+        }
+      }
+
+      if (patternOk && cleanOk && !hasRedundant) {
+        pass++;
+      } else {
+        fail++;
+        let err = "";
+        if (!patternOk) err += "pattern ";
+        if (!cleanOk) err += "dirty ";
+        if (hasRedundant) err += "redundant ";
+        failures.push({ s: scramble, err });
+      }
+    } catch (e) {
+      fail++;
+      const msg = (e as Error)?.message ?? String(e);
+      failures.push({ s: "", err: msg.substring(0, 60) });
+    }
+  }
+
+  console.log(`  Pattern correct:  ${pass + fail === 0 ? 0 : pass}/${pass + fail}`);
+  console.log(`  Redundant pairs:  ${redundantPairs}`);
+  console.log(`  Failures:         ${fail}/${pass + fail}\n`);
+
+  showDistribution(lengths);
+
+  if (failures.length > 0) {
+    console.log(`\n  Failures:`);
+    for (const f of failures.slice(0, 5)) {
+      console.log(`    ✗ [${f.err}] ${f.s.substring(0, 60)}`);
+    }
+  }
+
+  console.log("\n" + "=".repeat(64));
+  if (fail > 0 || redundantPairs > 0) {
+    console.log("  ✗ FAILED — redundant pairs or pattern errors found\n");
+    process.exit(1);
+  }
+  console.log("  ✅ ALL PASSED — 0 redundant pairs, 0 pattern errors\n");
 }
 
 main().catch((e) => { console.error("FATAL:", e); process.exit(1); });

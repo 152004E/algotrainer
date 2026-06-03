@@ -17,7 +17,7 @@
 4. **Frente = Verde, Arriba = Blanco** (orientación WCA estándar)
    - Centers standard: `U=0 L=1 F=2 R=3 B=4 D=5`
 
-5. **No cascade en simplificación** — solo boundary checks entre segmentos concatenados
+5. **Full simplification via `simplifyMoves`** — elimina cualquier par consecutivo en la misma cara, con cascadeo automático
 
 6. **AlgoCase type no se modifica** — cero migración de datos existentes
 
@@ -36,7 +36,7 @@ pertInverted = invert(R)                      // deshace perturbación
 scramble = solvedToPerturbed + pertInverted    // concatenación
 ```
 
-Notar que `solution ≈ invert(R) + solveMin2Phase(target)`, por tanto `solvedToPerturbed ≈ solvedToTarget + R` y la concatenación resultante es `solvedToTarget + R + invert(R)`. Sin simplificación, `R + invert(R)` sería identidad (mata diversidad). Por eso usamos simplificación **boundary-only**.
+Notar que `solution ≈ invert(R) + solveMin2Phase(target)`, por tanto `solvedToPerturbed ≈ solvedToTarget + R` y la concatenación resultante es `solvedToTarget + R + invert(R)`. Sin simplificación, `R + invert(R)` sería identidad (mata diversidad). Usamos `simplifyMoves` que hace simplificación full con cascadeo, combinando/cancelando cualquier par consecutivo en la misma cara.
 
 ### Center correction
 
@@ -48,16 +48,16 @@ scramble = solvedToPerturbed + pertInverted + invert(correction)
 
 Casos afectados: 16 casos F2L que tienen `y` o `y'` en centers.
 
-### Boundary-only simplification
+### Full simplification via `simplifyMoves`
 
 ```typescript
-function simplifyBoundary(segments: string[]): string
+function simplifyMoves(algStr: string): string
 ```
 
-- Itera cada par de segmentos adyacentes
-- Por cada par: si el último move de A y el primero de B tienen la misma cara, combina/cancela
-- **No cascading**: no revisa la nueva adyacencia creada tras combinar
-- Esto preserva la perturbación `R + invert(R)` casi intacta (solo se pierde el par en el seam)
+- Recorre todos los moves con un algoritmo tipo stack
+- Cuando encuentra dos moves consecutivos con la misma cara base, los combina con `combineMoves`
+- El cascadeo es natural: el resultado combinado se vuelve a apilar y se compara con el siguiente
+- Garantiza 0 pares consecutivos en la misma cara en el scramble final
 
 ### Rejection guard
 
@@ -114,27 +114,21 @@ class ScrambleService {
 
 ### `scripts/validateCleanScrambles.ts`
 
-- 564 scrambles (188 cases × 3)
-- Checks: U-layer correct, face-only moves, seam redundancy tracking
-- Expect: 100% pattern, 100% clean, ~0.19 seam pairs/scramble
+- OLL 33 (30 scrambles) — caso de prueba controlado
+- Checks: U-layer correct, face-only moves, 0 redundant pairs
+- Expect: 100% pattern, 100% clean, 0 redundant pairs
 
 ### `scripts/validateScrambleDiversity.ts`
 
 - 100 scrambles OLL 33
 - Checks: U-layer, unique strings, suffix diversity, D-equivalence, redundancy
-- Expect: 100% unique, 0 D-equivalent, avg 0-1 seam pairs
+- Expect: 100% unique, 0 D-equivalent, 0 redundant pairs
 
 ---
 
-## Seam redundancy
+## Redundant pairs
 
-La simplificación boundary-only cancela un par por segmento:
-```
-solvedToTarget + [R + invert(R)]  →  solvedToTarget + [R_minus_last + invert(R)_minus_first]
-```
-
-Esto deja ~0-1 pares redundantes (e.g. `U' U`, `F2 F2`) por scramble.
-Son cosméticos y no afectan el estado del cubo.
+Con `simplifyMoves` se garantizan 0 pares redundantes (consecutivos en la misma cara) en el scramble final. Cualquier `F2 F2`, `U U'`, `R R2`, etc. se combina o elimina automáticamente.
 
 ---
 
@@ -145,5 +139,5 @@ Son cosméticos y no afectan el estado del cubo.
 | Kociemba composition en vez de `solveTwips` | Solver óptimo determinístico, más rápido |
 | `invert(algorithm)` siempre | Bug en datos OLL con `scramble === algorithm` |
 | No dmove | Desalineación visual del cubo |
-| Boundary-only simplification | `simplifyMoves` reducía pert + invert(pert) → identidad (0 diversidad) |
+| Full simplification (`simplifyMoves`) | Elimina todo par consecutivo en misma cara; cascadeo natural vía stack. La diversidad se mantiene porque el solver Kociemba produce caminos distintos |
 | Perturbación de 3-5 movimientos | Suficiente diversidad sin alargar demasiado el scramble |

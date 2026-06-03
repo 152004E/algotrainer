@@ -9,7 +9,7 @@
 - **Stack**: React 19 + TS + Vite + Tailwind v4 + React Router v7
 - **cubing.js v0.63.3**: `cubing/puzzles`, `cubing/kpuzzle`, `cubing/search`, `cubing/alg`
 - **Scramble generation**: Dynamic via Kociemba composition (min2phase)
-  - `solveMin2Phase(perturbedTarget)` + `invert(pert)` with boundary-only simplification
+  - `solveMin2Phase(perturbedTarget)` + `invert(pert)` with full simplification via `simplifyMoves`
   - Only face moves: `U D R L F B` + `'` `2`
   - No rotations/wide/slice moves, **no dmove suffix**
   - `getEffectiveSetup` siempre usa `invert(algorithm)`, nunca `c.scramble`
@@ -22,7 +22,7 @@
 1. **Scramble generation system (IMPLEMENTED)**:
    - `src/utils/scrambleService.ts`: `ScrambleService` class con `generateScramble(case)`
    - Usa Kociemba composition: `solvedToPerturbed + pertInverted`
-   - Boundary-only simplification (no cascade)
+   - Full simplification via `simplifyMoves` (stack-based, cascadeo natural)
    - No dmove suffix
    - Rejection guard: si colapsa a base setup, regenera
    - Pre-warming cache por case
@@ -42,7 +42,7 @@
    - Solo face moves (U D R L F B + ' 2)
    - No dmove al final (desalinea visualmente)
    - `getEffectiveSetup` = `invert(algorithm)` siempre
-   - Boundary-only simplification: solo el seam entre segmentos, no cascade
+   - Full simplification via `simplifyMoves`: elimina cualquier par consecutivo en la misma cara, con cascadeo automático
    - Center correction: detecta y/y'/y2, aplica al target, añade inverse al final
    - AlgoCase type sin modificar
 

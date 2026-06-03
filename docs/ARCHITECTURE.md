@@ -149,7 +149,7 @@ ScrambleService (singleton)
       └─ target = solved.applyAlg(getEffectiveSetup(c))
       └─ pert = randomMoves(3-5)
       └─ solveMin2Phase(target.applyAlg(pert)) → invert → solvedToPerturbed
-      └─ scramble = simplifyBoundary([solvedToPerturbed, invert(pert)])
+      └─ scramble = simplifyMoves([solvedToPerturbed, invert(pert)].join(" "))
 
 AlgorithmCategory (for OLL 33 currently)
   ├─ dynamicScramble: string | undefined

@@ -22,6 +22,25 @@ function uLayerEquals(a: any, b: any): boolean {
   return aC === bC;
 }
 
+function showDistribution(lengths: number[]): void {
+  const total = lengths.length;
+  const maxLen = Math.max(...lengths);
+  const minLen = Math.min(...lengths);
+  const avg = lengths.reduce((a, b) => a + b, 0) / total;
+
+  const counts: Record<number, number> = {};
+  for (const l of lengths) counts[l] = (counts[l] ?? 0) + 1;
+
+  for (let l = minLen; l <= maxLen; l++) {
+    const c = counts[l] ?? 0;
+    const pct = ((c / total) * 100).toFixed(0);
+    const bar = "█".repeat(c);
+    const flag = l > 20 ? " ✗" : "";
+    console.log(`       ${String(l).padStart(2)}: ${String(pct).padStart(3)}%  ${bar}${flag}`);
+  }
+  console.log(`       avg=${avg.toFixed(1)}  min=${minLen}  max=${maxLen}`);
+}
+
 /** Find consecutive same-face pairs that are redundant (e.g. U' U, U U', U2 U2). */
 function countSeamRedundancies(s: string): number {
   const parts = s.trim().split(/\s+/);
@@ -50,7 +69,7 @@ function isDEquivalent(scramble: string, base: string): boolean {
 async function main() {
   console.log("\n" + "=".repeat(64));
   console.log("  SCRAMBLE DIVERSITY VALIDATION — OLL 33");
-  console.log("  (boundary-only simplification, no dmove)");
+  console.log("  (full simplification via simplifyMoves, no dmove)");
   console.log("=".repeat(64));
 
   const oll33 = OLLCases.find((c) => c.id === "oll-33");
@@ -136,15 +155,18 @@ async function main() {
   const avgRedundant = (totalRedundantPairs / scrambles.length).toFixed(1);
   const maxRedundant = Math.max(...redundancies);
   const minRedundant = Math.min(...redundancies);
-  console.log(`  5. Seam-redundant pairs (same-face adjacent): avg=${avgRedundant}, min=${minRedundant}, max=${maxRedundant}`);
-  console.log(`     (expected: ~1 pair from pert/invert boundary; not a failure)`);
+  console.log(`  5. Redundant pairs (same-face adjacent): avg=${avgRedundant}, min=${minRedundant}, max=${maxRedundant}`);
+  console.log(`     (expected: 0 with simplifyMoves; any > 0 is a failure)`);
 
   // --- 6. Scramble length stats ---
   const lengths = scrambles.map(s => s.trim().split(/\s+/).length);
   const avgLen = (lengths.reduce((a, b) => a + b, 0) / lengths.length).toFixed(1);
   const baseLen = baseSetup.trim().split(/\s+/).length;
+  const over20 = lengths.filter(l => l > 20).length;
   console.log(`  6. Base setup length: ${baseLen} moves`);
   console.log(`     Scramble length: avg=${avgLen}, min=${Math.min(...lengths)}, max=${Math.max(...lengths)}`);
+  console.log(`     Over 20 moves: ${over20}/${lengths.length}`);
+  showDistribution(lengths);
 
   // --- 7. D-equivalence check ---
   let dEqCount = 0;
@@ -162,13 +184,18 @@ async function main() {
 
   // --- 9. Final verdict ---
   const diversityOk = uniq10.size > 10;
+  const lengthOk = over20 === 0;
   console.log(`\n  ${"=".repeat(64)}`);
-  if (patternOk === scrambles.length && diversityOk && dEqCount === 0) {
-    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique, ${uniq10.size} unique last-10, 0 D-equivalent`);
+  if (patternOk === scrambles.length && diversityOk && dEqCount === 0 && totalRedundantPairs === 0 && lengthOk) {
+    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique, ${uniq10.size} unique last-10, 0 D-equivalent, 0 redundant pairs, 0 over-20`);
   } else if (patternOk < scrambles.length) {
     console.log(`  ✗ FAILED — ${patternFail} scrambles with wrong U-layer`);
+  } else if (!lengthOk) {
+    console.log(`  ✗ FAILED — ${over20} scrambles exceed 20 moves (expected 0)`);
   } else if (dEqCount > 0) {
     console.log(`  ⚠ WARNING — ${dEqCount} scrambles D-equivalent to base`);
+  } else if (totalRedundantPairs > 0) {
+    console.log(`  ✗ FAILED — ${totalRedundantPairs} redundant pairs found (expected 0)`);
   } else {
     console.log(`  ⚠ WARNING — Only ${uniq10.size} unique last-10 suffixes (low diversity)`);
   }
