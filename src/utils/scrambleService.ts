@@ -134,11 +134,52 @@ export class ScrambleService {
   async generateScramble(c: AlgoCase): Promise<string> {
     const { target, correction } = await this.prepareTarget(c);
 
+    // --- OLL 33 PLL variation: pick random PLL, build target ---
+    let scrambleTarget = target;
+    if (c.id === "oll-33") {
+      const pllAlgs: { name: string; alg: string }[] = [
+        { name: "skip", alg: "" },
+        { name: "Ua",   alg: "R U' R U R U R U' R' U' R2" },
+        { name: "Ub",   alg: "R2 U R U R' U' R' U' R' U R'" },
+        { name: "Aa",   alg: "R' F R' B2 R F' R' B2 R2" },
+        { name: "Ab",   alg: "R B' R F2 R' B R F2 R2" },
+        { name: "E",    alg: "R' U' R U D' R2 U R' U R U' R U' R2 D" },
+        { name: "F",    alg: "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R" },
+        { name: "Ga",   alg: "R2 U R' U R' U' R U' R2 U' D R' U R D'" },
+        { name: "Gb",   alg: "R' U' R U D' R2 U R' U R U' R U' R2 D'" },
+        { name: "Gc",   alg: "R2 U' R U' R U R' U R2 D' U R U' R' D" },
+        { name: "Gd",   alg: "R U R' U' D R2 U' R U' R' U R' U R2 D'" },
+        { name: "H",    alg: "R2 U2 R U2 R2 U2 R2 U2 R U2 R2" },
+        { name: "Ja",   alg: "R U R' F' R U R' U' R' F R2 U' R'" },
+        { name: "Jb",   alg: "R' U2 R U R' U2 L U' R U L'" },
+        { name: "Na",   alg: "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'" },
+        { name: "Nb",   alg: "R' U R U' R' F' U' F R U R' F R' F' R U' R" },
+        { name: "Ra",   alg: "R U R' F' R U2 R' U2 R' F R U R U2 R'" },
+        { name: "Rb",   alg: "R' U2 R U2 R' F R U R' U' R' F' R2 U'" },
+        { name: "T",    alg: "R U R' U' R' F R2 U' R' U' R U R' F'" },
+        { name: "V",    alg: "R' U R' U' B' R' B2 U' B' U B' R B R" },
+        { name: "Y",    alg: "F R U' R' U' R U R' F' R U R' U' R' F R F'" },
+        { name: "Z",    alg: "R' U' R U' R U R U' R' U R U R2 U' R'" },
+      ];
+      const pll = pllAlgs[Math.floor(Math.random() * pllAlgs.length)];
+      if (pll.alg) {
+        const kp = await this.getKPuzzle();
+        const setup = getEffectiveSetup(c);
+        scrambleTarget = kp.defaultPattern()
+          .applyAlg(new Alg(pll.alg))
+          .applyAlg(new Alg(setup));
+        if (correction) {
+          scrambleTarget = scrambleTarget.applyAlg(new Alg(correction));
+        }
+      }
+    }
+    // -------------------------------------------
+
     const pertCount = 3 + Math.floor(Math.random() * 3);
     const pert = randomMoves(pertCount);
     const pertAlg = new Alg(pert);
 
-    const perturbedTarget = target.applyAlg(pertAlg);
+    const perturbedTarget = scrambleTarget.applyAlg(pertAlg);
     const perturbedToSolved = await solveMin2Phase(perturbedTarget);
     const solvedToPerturbed = normalize(String(perturbedToSolved.invert()));
     const pertInverted = normalize(String(pertAlg.invert()));

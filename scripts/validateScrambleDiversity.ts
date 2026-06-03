@@ -13,13 +13,20 @@ function getEffectiveSetup(alg: string): string {
   return new Alg(alg).invert().toString();
 }
 
-function uLayerEquals(a: any, b: any): boolean {
-  const aE = JSON.stringify(a.patternData["EDGES"].pieces.slice(0, 4));
-  const bE = JSON.stringify(b.patternData["EDGES"].pieces.slice(0, 4));
-  if (aE !== bE) return false;
-  const aC = JSON.stringify(a.patternData["CORNERS"].pieces.slice(0, 4));
-  const bC = JSON.stringify(b.patternData["CORNERS"].pieces.slice(0, 4));
-  return aC === bC;
+function makeOLL33Checker(kp: KPuzzle, alg: string): (p: any) => boolean {
+  const setup = new Alg(alg).invert().toString();
+  const baseTarget = kp.defaultPattern().applyAlg(new Alg(setup));
+  const refEO = baseTarget.patternData["EDGES"].orientation.slice(0, 4);
+  const refCO = baseTarget.patternData["CORNERS"].orientation.slice(0, 4);
+  return (p: any) => {
+    const eO = p.patternData["EDGES"].orientation;
+    const cO = p.patternData["CORNERS"].orientation;
+    for (let i = 0; i < 4; i++) {
+      if (eO[i] !== refEO[i]) return false;
+      if (cO[i] !== refCO[i]) return false;
+    }
+    return true;
+  };
 }
 
 function showDistribution(lengths: number[]): void {
@@ -103,16 +110,16 @@ async function main() {
     for (const e of errors.slice(0, 5)) console.log(`    ${e}`);
   }
 
-  // --- 1. Pattern validation ---
-  const expected = kp.defaultPattern().applyAlg(new Alg(baseSetup));
+  // --- 1. Pattern validation (orientation-based for OLL33) ---
+  const isOLL33 = makeOLL33Checker(kp, oll33.algorithm);
   let patternOk = 0, patternFail = 0;
   for (const s of scrambles) {
-    const actual = kp.defaultPattern().applyAlg(new Alg(s));
-    if (uLayerEquals(expected, actual)) patternOk++;
+    const state = kp.defaultPattern().applyAlg(new Alg(s));
+    if (isOLL33(state)) patternOk++;
     else patternFail++;
   }
-  console.log(`  1. U-layer correct: ${patternOk}/${scrambles.length} (${(patternOk / scrambles.length * 100).toFixed(1)}%)`);
-  if (patternFail > 0) console.log(`     ✗ ${patternFail} scrambles produced wrong U-layer`);
+  console.log(`  1. OLL33 orientation correct: ${patternOk}/${scrambles.length} (${(patternOk / scrambles.length * 100).toFixed(1)}%)`);
+  if (patternFail > 0) console.log(`     ✗ ${patternFail} scrambles have wrong OLL33 orientation`);
 
   // --- 2. Unique scrambles ---
   const unique = new Set(scrambles);
@@ -176,20 +183,45 @@ async function main() {
   console.log(`  7. D-equivalent scrambles (base + D-move): ${dEqCount}/${scrambles.length}`);
   console.log(`     (should be 0 without dmove suffix)`);
 
-  // --- 8. Sample scrambles ---
-  console.log(`\n  8. Sample scrambles (first 5):`);
+  // --- 8. PLL variation check ---
+  const pllSigs = scrambles.map(s => {
+    const state = kp.defaultPattern().applyAlg(new Alg(s));
+    const after = state.applyAlg(new Alg(oll33.algorithm));
+    return JSON.stringify(after.patternData["EDGES"].pieces.slice(0, 4))
+         + JSON.stringify(after.patternData["CORNERS"].pieces.slice(0, 4));
+  });
+  const uniquePlls = new Set(pllSigs);
+  console.log(`  8. PLLs distintos tras ejecutar OLL33: ${uniquePlls.size}`);
+  if (uniquePlls.size > 1) {
+    const solvedSig = JSON.stringify(kp.defaultPattern().patternData["EDGES"].pieces.slice(0, 4))
+                    + JSON.stringify(kp.defaultPattern().patternData["CORNERS"].pieces.slice(0, 4));
+    const pllCounts = new Map<string, number>();
+    for (const sig of pllSigs) pllCounts.set(sig, (pllCounts.get(sig) ?? 0) + 1);
+    console.log(`     Distribution:`);
+    for (const [sig, cnt] of [...pllCounts.entries()].sort((a, b) => b[1] - a[1])) {
+      const label = sig === solvedSig ? "skip" : `PLL_${[...pllCounts.keys()].indexOf(sig)}`;
+      console.log(`       ${label}: ${cnt}/${scrambles.length} (${((cnt / scrambles.length) * 100).toFixed(0)}%)`);
+    }
+  }
+  console.log(`     (expected: >1 with PLL variation)`);
+
+  // --- 9. Sample scrambles ---
+  console.log(`\n  9. Sample scrambles (first 5):`);
   for (let i = 0; i < Math.min(5, scrambles.length); i++) {
     console.log(`     [${i + 1}] ${scrambles[i]}`);
   }
 
-  // --- 9. Final verdict ---
+  // --- 10. Final verdict ---
   const diversityOk = uniq10.size > 10;
   const lengthOk = over20 === 0;
+  const pllsOk = uniquePlls.size > 1;
   console.log(`\n  ${"=".repeat(64)}`);
-  if (patternOk === scrambles.length && diversityOk && dEqCount === 0 && totalRedundantPairs === 0 && lengthOk) {
-    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique, ${uniq10.size} unique last-10, 0 D-equivalent, 0 redundant pairs, 0 over-20`);
+  if (patternOk === scrambles.length && diversityOk && dEqCount === 0 && totalRedundantPairs === 0 && lengthOk && pllsOk) {
+    console.log(`  ✅ ALL CHECKS PASSED — ${unique.size} unique, ${uniq10.size} unique last-10, 0 D-equivalent, 0 redundant pairs, 0 over-20, ${uniquePlls.size} PLLs`);
   } else if (patternOk < scrambles.length) {
-    console.log(`  ✗ FAILED — ${patternFail} scrambles with wrong U-layer`);
+    console.log(`  ✗ FAILED — ${patternFail} scrambles with wrong OLL33 orientation`);
+  } else if (!pllsOk) {
+    console.log(`  ✗ FAILED — Only ${uniquePlls.size} PLL detected (expected >1)`);
   } else if (!lengthOk) {
     console.log(`  ✗ FAILED — ${over20} scrambles exceed 20 moves (expected 0)`);
   } else if (dEqCount > 0) {
