@@ -12,11 +12,11 @@ interface GenCase {
 
 const DATASET: GenCase[] = [
   {
-    id: "pll-f",
-    name: "F Perm",
-    shape: "Adjacent corner + edge cycle",
-    scramble: "R' U' R U' R' U R U R2' F' R U R U' R' F U R",
-    algorithm: "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+    id: "pll-ja",
+    name: "Ja Perm",
+    shape: "L-shape corner + edge",
+    scramble: "R' U2' R U R' U2' L U' R U L'",
+    algorithm: "L U' R' U L' U2 R U' R' U2 R",
   },
 ];
 
@@ -28,7 +28,7 @@ const GeneratePreviews = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [images, setImages] = useState<{ id: string; url: string }[]>([]);
   const [ready, setReady] = useState(false);
-  const [filter, setFilter] = useState("pll-f");
+  const [filter, setFilter] = useState("pll-ja");
   const cancelledRef = useRef(false);
 
   const filtered = filter.trim()
@@ -82,7 +82,7 @@ const GeneratePreviews = () => {
       console.log(`[PLL Generator] [${i + 1}/${ds.length}] ${c.id} — scramble: ${c.scramble}`);
 
       try {
-        let setupAlg = new Alg("y").concat(new Alg(c.scramble)).concat(new Alg("y'"));
+        let setupAlg = new Alg("y'").concat(new Alg(c.scramble)).concat(new Alg("y"));
         const setupStr = setupAlg.toString();
         console.log(`[PLL Generator]   setup: ${setupStr}`);
 
@@ -143,7 +143,7 @@ const GeneratePreviews = () => {
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="pll-f"
+            placeholder="pll-ja"
             className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
           />
         </div>
