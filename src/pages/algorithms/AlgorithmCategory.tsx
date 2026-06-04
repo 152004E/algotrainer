@@ -50,13 +50,32 @@ const MiniCubeIcon = ({ slug }: { slug: string }) => {
   );
 };
 
+const STORAGE_KEY = (s: string) => `algotrainer:filters:${s}`;
+
+const loadFilters = (slug: string | undefined) => {
+  if (!slug) return { search: "", filters: {} };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY(slug));
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { search: "", filters: {} };
+};
+
+const saveFilters = (slug: string, search: string, filters: Record<string, string>) => {
+  try {
+    localStorage.setItem(STORAGE_KEY(slug), JSON.stringify({ search, filters }));
+  } catch {}
+};
+
 const AlgorithmCategory = () => {
   const { slug } = useParams<{ slug: string }>();
   const category = algorithmCategories.find((c) => c.slug === slug);
   const allCases = slug ? dataMap[slug] ?? [] : [];
 
-  const [search, setSearch] = useState("");
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState(() => loadFilters(slug).search);
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>(
+    () => loadFilters(slug).filters,
+  );
   const [selectedAlg, setSelectedAlg] = useState<AlgoCase | null>(null);
   const [dynamicScramble, setDynamicScramble] = useState<string | undefined>(undefined);
 
@@ -64,6 +83,20 @@ const AlgorithmCategory = () => {
     () => selectedAlg ? resolveAllAlgorithms(selectedAlg, allCases) : null,
     [selectedAlg, allCases],
   );
+
+  const prevSlug = useRef(slug);
+  useEffect(() => {
+    if (slug && slug !== prevSlug.current) {
+      const data = loadFilters(slug);
+      setSearch(data.search);
+      setActiveFilters(data.filters);
+    }
+    prevSlug.current = slug;
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug) saveFilters(slug, search, activeFilters);
+  }, [slug, search, activeFilters]);
 
   useEffect(() => {
     if (selectedAlg?.id.startsWith("oll-")) {

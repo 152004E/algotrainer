@@ -31,9 +31,11 @@ const PLLCases: AlgoCase[] = [
     aliases: ["U-PLL a"],
     usedIn: "EPLL, PLL, ELL, ZBLL, BLD",
     optimalMoves: "9 HTM, 7 STM",
+    ergonomicPairId: "pll-ub",
+    isCanonicalVariantSource: true,
     alternatives: [
-      "(U2) M2' U M U2 M' U M2' ",
-      "(U2) R U' R U R U R U' R' U' R2",
+      "(y2) M2' U M U2 M' U M2' ",
+      "(y2) R U' R U R U R U' R' U' R2",
       "(U) R2 U' S' U2' S U' R2",
     ],
   },
@@ -49,10 +51,11 @@ const PLLCases: AlgoCase[] = [
     aliases: ["U-PLL b"],
     usedIn: "EPLL, PLL, ELL, ZBLL, BLD",
     optimalMoves: "9 HTM, 7 STM",
+    ergonomicPairId: "pll-ua",
     alternatives: [
-      "(U2) M2 U' M U2 M' U' M2",
-      "(U2) R2' U R U R' U' R' U' R' U R'",
-      "(U) R2 U' S R2' S' R2 U R2'",
+      "(y2) M2' U' M U2 M' U' M2'",
+      "(y2) L' U L' U' L' U' L' U L U L2'",
+      "(U') L2' U S U2' S' U L2'",
     ],
   },
   {
@@ -88,7 +91,7 @@ const PLLCases: AlgoCase[] = [
     alternatives: [
       "x R' U R' D2 R U' R' D2 R2 x'",
       "y x' R2 D2 R' U' R D2 R' U R' x y'",
-      "(U2) R' D R U' R' D' R U' R' D R U2 R' D' R (U2)",
+      "(y2) R' D R U' R' D' R U' R' D R U2 R' D' R (y2)",
     ],
   },
   {
@@ -160,9 +163,9 @@ const PLLCases: AlgoCase[] = [
     usedIn: "PLL, ZBLL, ZZLL",
     optimalMoves: "14 HTM",
     alternatives: [
-      "y2 R' U2 R' d' R' F' R2 U' R' U R' F R U' F",
-      "(R' U R U') R2 (F' U' F U) (R F R' F') R2 U'",
-      "R' U R U' R' F' R2 U' R' U' R U R' U R",
+      "y R' U2 R' d' R' F' R2 U' R' U R' F R U' F",
+      "y' (R' U R U') R2 (F' U' F U) (R F R' F') R2 U'",
+      "U' M' U2 L F' R U2 r' U r' R2 U2 R2",
     ],
   },
   {

@@ -12,11 +12,11 @@ interface GenCase {
 
 const DATASET: GenCase[] = [
   {
-    id: "pll-aa",
-    name: "Aa Perm",
-    shape: "Corner cycle (clockwise)",
-    scramble: "R2' B2' R F R' B2' R F' R",
-    algorithm: "R' F R' B2 R F' R' B2 R2",
+    id: "pll-f",
+    name: "F Perm",
+    shape: "Adjacent corner + edge cycle",
+    scramble: "R' U' R U' R' U R U R2' F' R U R U' R' F U R",
+    algorithm: "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
   },
 ];
 
@@ -28,7 +28,7 @@ const GeneratePreviews = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [images, setImages] = useState<{ id: string; url: string }[]>([]);
   const [ready, setReady] = useState(false);
-  const [filter, setFilter] = useState("pll-aa");
+  const [filter, setFilter] = useState("pll-f");
   const cancelledRef = useRef(false);
 
   const filtered = filter.trim()
@@ -143,7 +143,7 @@ const GeneratePreviews = () => {
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="pll-aa"
+            placeholder="pll-f"
             className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
           />
         </div>
