@@ -6,87 +6,34 @@ interface GenCase {
   id: string;
   name: string;
   shape: string;
+  scramble: string;
   algorithm: string;
 }
 
-const WV_DATASET: GenCase[] = [
-  { id: "wv-01", name: "3 Corners", shape: "Rectangle", algorithm: "L' U2 R U R' U2 L" },
-  { id: "wv-02", name: "2 Corners", shape: "Rectangle", algorithm: "U' R' F R U R U' R' F'" },
-  { id: "wv-03", name: "2 Corners", shape: "Snake", algorithm: "R U' R'" },
-  { id: "wv-04", name: "2 Corners", shape: "Snake", algorithm: "R U' R' U R' U' R U' R' U2 R" },
-  { id: "wv-05", name: "2 Corners", shape: "Tank", algorithm: "R2 D R' U' R D' R2" },
-  { id: "wv-06", name: "2 Corners", shape: "Tank", algorithm: "R U R' U' R U' R'" },
-  { id: "wv-07", name: "2 Corners", shape: "Adjacent", algorithm: "U' R U' R' U2 R U' R' U2 R U R'" },
-  { id: "wv-08", name: "1 Corner", shape: "Adjacent", algorithm: "R U' R D' R U2 R' D R U2 R" },
-  { id: "wv-09", name: "1 Corner", shape: "Adjacent", algorithm: "U' R' F' R U2 R U2 R' F" },
-  { id: "wv-10", name: "1 Corner", shape: "Adjacent", algorithm: "U R U2 R'" },
-  { id: "wv-11", name: "1 Corner", shape: "Adjacent", algorithm: "U R U' R' U' R' F R U R U' R' F'" },
-  { id: "wv-12", name: "1 Corner", shape: "Bowtie", algorithm: "U' L' U R U' R' L" },
-  { id: "wv-13", name: "1 Corner", shape: "Bowtie", algorithm: "U R2 D R' U2 R D' R2" },
-  { id: "wv-14", name: "1 Corner", shape: "Bowtie", algorithm: "U R U2 R2 U' R U' R' U2 R" },
-  { id: "wv-15", name: "1 Corner", shape: "Bowtie", algorithm: "U' R' F2 R F2 U L' U L" },
-  { id: "wv-16", name: "1 Corner", shape: "Gun (Back)", algorithm: "R U R2 U' R2 U' R2 U2 R" },
-  { id: "wv-17", name: "1 Corner", shape: "Gun (Far)", algorithm: "U R' U' R2 U' R2 U2 R" },
-  { id: "wv-18", name: "1 Corner", shape: "Gun (Near)", algorithm: "U R U' R' U R U2 R'" },
-  { id: "wv-19", name: "1 Corner", shape: "Gun (Sides)", algorithm: "R U' R' U R U2 R2 U' R2 U' R2 U2 R" },
-  { id: "wv-20", name: "0 Corners", shape: "H (Front)", algorithm: "U R' U L U' R2 U L' U R'" },
-  { id: "wv-21", name: "0 Corners", shape: "H (Side)", algorithm: "U R U' R' U R U' R' U R U2 R'" },
-  { id: "wv-22", name: "0 Corners", shape: "Pi (Back)", algorithm: "R2 D R' U R D' R' U2 R'" },
-  { id: "wv-23", name: "0 Corners", shape: "Pi (Far)", algorithm: "R U' R2 U2 R U R' U R" },
-  { id: "wv-24", name: "0 Corners", shape: "Pi (Front)", algorithm: "U R U2 R2 U2 R U R' U R" },
-  { id: "wv-25", name: "0 Corners", shape: "Pi (Near)", algorithm: "R U' R2 U' R U' R' U2 R" },
-  { id: "wv-26", name: "0 Corners", shape: "Sune", algorithm: "R U R' U' R U R' U' R U' R'" },
-  { id: "wv-27", name: "0 Corners", shape: "Sune", algorithm: "R U' R' U' R U R' U R U2 R'" },
-];
-
-const EDGE_PLL_DATASET: GenCase[] = [
+const DATASET: GenCase[] = [
   {
-    id: "pll-h",
-    name: "H Perm",
-    shape: "Opposite edge swap",
-    algorithm: "M2' U M2' U2 M2' U M2'",
-  },
-  {
-    id: "pll-ua",
-    name: "Ua Perm",
-    shape: "Edge cycle (clockwise)",
-    algorithm: "R U R' U R' U' R2 U' R' U R' U R U2",
-  },
-  {
-    id: "pll-ub",
-    name: "Ub Perm",
-    shape: "Edge cycle (counter-clockwise)",
-    algorithm: "R' U R' U' R' U' R' U R U R2",
-  },
-  {
-    id: "pll-z",
-    name: "Z Perm",
-    shape: "Adjacent edge swap",
-    algorithm: "M' U M2' U M2' U M' U2 M2'",
+    id: "pll-aa",
+    name: "Aa Perm",
+    shape: "Corner cycle (clockwise)",
+    scramble: "R2' B2' R F R' B2' R F' R",
+    algorithm: "R' F R' B2 R F' R' B2 R2",
   },
 ];
-
-const DATASETS: Record<string, { label: string; data: GenCase[] }> = {
-  wv: { label: "Winter Variation", data: WV_DATASET },
-  edgepll: { label: "Edge PLL", data: EDGE_PLL_DATASET },
-};
 
 const GeneratePreviews = () => {
   const playerRef = useRef<any>(null);
-  const [datasetKey, setDatasetKey] = useState<string>("edgepll");
   const [status, setStatus] = useState<"idle" | "generating" | "done">("idle");
   const [current, setCurrent] = useState("");
   const [progress, setProgress] = useState(0);
   const [errors, setErrors] = useState<string[]>([]);
   const [images, setImages] = useState<{ id: string; url: string }[]>([]);
   const [ready, setReady] = useState(false);
-  const [filter, setFilter] = useState("pll-h, pll-ua, pll-ub, pll-z");
+  const [filter, setFilter] = useState("pll-aa");
   const cancelledRef = useRef(false);
 
-  const dataset = DATASETS[datasetKey].data;
   const filtered = filter.trim()
-    ? dataset.filter((c) => filter.split(",").map((s) => s.trim()).includes(c.id))
-    : dataset;
+    ? DATASET.filter((c) => filter.split(",").map((s) => s.trim()).includes(c.id))
+    : DATASET;
   const total = filtered.length;
 
   useEffect(() => {
@@ -132,12 +79,12 @@ const GeneratePreviews = () => {
       const c = ds[i];
       setCurrent(`${c.id} — ${c.name} ${c.shape}`);
       setProgress(i + 1);
-      console.log(`[${datasetKey.toUpperCase()} Generator] [${i + 1}/${ds.length}] ${c.id} — ${c.algorithm}`);
+      console.log(`[PLL Generator] [${i + 1}/${ds.length}] ${c.id} — scramble: ${c.scramble}`);
 
       try {
-        let setupAlg = new Alg("y'").concat(new Alg(c.algorithm).invert()).concat(new Alg("y"));
+        let setupAlg = new Alg("y").concat(new Alg(c.scramble)).concat(new Alg("y'"));
         const setupStr = setupAlg.toString();
-        console.log(`[${datasetKey.toUpperCase()} Generator]   setup: ${setupStr}`);
+        console.log(`[PLL Generator]   setup: ${setupStr}`);
 
         el.experimentalSetupAlg = setupStr;
         el.experimentalSetupAnchor = "start";
@@ -150,22 +97,22 @@ const GeneratePreviews = () => {
         if (typeof url === "string" && url.startsWith("data:image")) {
           results.push({ id: `${c.id}.png`, url });
           setImages([...results]);
-          console.log(`[${datasetKey.toUpperCase()} Generator] ✓ ${c.id}`);
+          console.log(`[PLL Generator] ✓ ${c.id}`);
         } else {
           throw new Error("Invalid screenshot result");
         }
       } catch (err) {
         const msg = `${c.id}: ${err instanceof Error ? err.message : String(err)}`;
-        console.error(`[${datasetKey.toUpperCase()} Generator] ✗ ${c.id} —`, err);
+        console.error(`[PLL Generator] ✗ ${c.id} —`, err);
         setErrors((prev) => [...prev, msg]);
       }
 
       await new Promise((r) => setTimeout(r, 150));
     }
 
-    console.log(`[${datasetKey.toUpperCase()} Generator] Done. ${results.length}/${ds.length} generated`);
+    console.log(`[PLL Generator] Done. ${results.length}/${ds.length} generated`);
     setStatus("done");
-  }, [datasetKey]);
+  }, []);
 
   const downloadAll = useCallback(() => {
     images.forEach((img, i) => {
@@ -177,7 +124,6 @@ const GeneratePreviews = () => {
   }, [images]);
 
   const progressPct = total > 0 ? Math.round((progress / total) * 100) : 0;
-  const label = DATASETS[datasetKey].label;
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
@@ -186,33 +132,8 @@ const GeneratePreviews = () => {
           Preview Generator
         </h1>
         <p className="text-slate-500 dark:text-slate-400 mb-8">
-          Generating {total} {label} case previews via inverse setup
+          Generating {total} PLL case previews
         </p>
-
-        <div className="flex gap-2 mb-6">
-          {Object.entries(DATASETS).map(([key, ds]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => {
-                if (status !== "generating") {
-                  setDatasetKey(key);
-                  setImages([]);
-                  setErrors([]);
-                  setStatus("idle");
-                }
-              }}
-              disabled={status === "generating"}
-              className={`px-4 py-2 rounded-lg font-bold text-sm transition ${
-                datasetKey === key
-                  ? "bg-blue-500 text-white"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-              }`}
-            >
-              {ds.label}
-            </button>
-          ))}
-        </div>
 
         <div className="mb-4">
           <label className="block text-sm font-semibold text-slate-600 dark:text-slate-400 mb-1">
@@ -222,7 +143,7 @@ const GeneratePreviews = () => {
             type="text"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="pll-ua, pll-ub, pll-z"
+            placeholder="pll-aa"
             className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
           />
         </div>
@@ -235,7 +156,7 @@ const GeneratePreviews = () => {
             className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl transition"
           >
             {status === "idle"
-              ? `Generate ${label} Previews (${total})`
+              ? `Generate PLL Previews (${total})`
               : status === "generating"
                 ? "Generating..."
                 : "Regenerate"}
