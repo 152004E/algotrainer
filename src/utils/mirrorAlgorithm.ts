@@ -76,6 +76,22 @@ const MIRROR_MAP: Record<string, string> = {
 const TOKEN_PATTERN = /[RLUDFBMSErludfbxyz]\d?'?/g;
 
 export function mirrorAlgorithm(alg: string): string {
+  if (alg.includes("||")) {
+    return alg
+      .split("||")
+      .map((segment, i) => {
+        const trimmed = segment.trim();
+        if (i % 2 === 1) {
+          return trimmed.replace(TOKEN_PATTERN, (match) => {
+            const mirrored = MIRROR_MAP[match];
+            return mirrored ?? match;
+          });
+        }
+        return trimmed;
+      })
+      .join(" ");
+  }
+
   return alg.replace(TOKEN_PATTERN, (match) => {
     const mirrored = MIRROR_MAP[match];
     return mirrored ?? match;
