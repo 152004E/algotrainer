@@ -29,7 +29,7 @@
 - Tailwind utility classes (no CSS modules)
 - No comments unless WHY is non-obvious
 - Props over Context (keep it simple)
-- One feature per commit
+- One feature per commit — **solo el usuario hace commits**; el agente nunca ejecuta `git commit`
 
 ### Naming
 - Components: PascalCase, in folders matching name

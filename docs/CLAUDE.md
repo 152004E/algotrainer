@@ -103,7 +103,7 @@
 - No comments unless WHY is non-obvious
 - Validate at boundaries only
 - Trust internal guarantees
-- One commit per feature
+- One commit per feature — pero **solo el usuario hace commits**; el agente avisa "listo para commitear"
 
 ### Before You Start
 1. Run `pnpm install` (already done)

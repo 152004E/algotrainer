@@ -51,6 +51,7 @@
 - Monitor for regressions
 
 ## Commits
+- **El agente nunca hace commits. Solo el usuario.** Cuando el trabajo esté listo, avisar con "listo para commitear"
 - Clear purpose: what + why
 - One fix per commit (unless bundled refactor makes sense)
 - No "used by X" comments (belongs in PR, not commit)
