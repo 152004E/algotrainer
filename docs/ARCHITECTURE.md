@@ -10,7 +10,7 @@
   - KPattern + KTransformation for cube state
   - `experimentalSolve3x3x3IgnoringCenters` (min2phase/Kociemba) for scramble generation
   - `Alg` for invert/normalize
-- **No state management** — local state + props only
+- **No state management library** — local state + props; mini store pub/sub `trainerStatsStore` (`src/hooks/TrainerStatsStore.ts`) + `TrainerContext` para stats del trainer
 
 ## Directory Structure
 
@@ -19,6 +19,7 @@ src/
 ├── App.tsx                       Main router definition
 ├── main.tsx                      Entry point with BrowserRouter
 ├── index.css                     Global styles & Tailwind imports
+├── types.ts                      AlgoCase, AlgorithmCategory, SessionStats
 │
 ├── types/
 │   └── cubing.d.ts              JSX type augmentation for <twisty-player>
@@ -33,20 +34,26 @@ src/
 │
 ├── pages/
 │   ├── Home.tsx                 Landing page (Hero + AlgorithmSection + HowItWorks)
-│   ├── Trainer.tsx              [DEAD FILE - not in router]
+│   ├── About.tsx                About page (/about)
+│   ├── algorithms/
+│   │   ├── AlgorithmsHome.tsx   Índice de subsets (/algorithms)
+│   │   └── AlgorithmCategory.tsx Categoría por subset (/algorithms/:slug)
+│   ├── dev/
+│   │   └── GeneratePreviews.tsx Dev tool (/dev/generate)
 │   └── trainer/
 │       ├── WVTrainer.tsx        Winter Variation (/trainer/wv)
 │       ├── MWTrainer.tsx        Magic Wonderful (/trainer/mw)
 │       ├── OLLTrainer.tsx       OLL (/trainer/oll)
 │       ├── PLLTrainer.tsx       PLL (/trainer/pll)
-│       └── F2LTrainer.tsx       F2L [NO ROUTE YET]
+│       └── F2LTrainer.tsx       F2L (/trainer/f2l)
 │
 ├── Components/
 │   ├── GlobalComponents/
 │   │   ├── Navbar.tsx           Sticky header with theme toggle
 │   │   ├── Footer.tsx
 │   │   ├── Button.tsx           Reusable button with FontAwesome
-│   │   └── ThemeToggle.tsx      Dark/light mode
+│   │   ├── ThemeToggle.tsx      Dark/light mode
+│   │   └── ThemeToggleButton.tsx Botón toggle reutilizable
 │   │
 │   ├── cube/
 │   │   └── CubeHero.tsx         Interactive 3D cube via cubing.js <twisty-player>
@@ -55,8 +62,7 @@ src/
 │   │   ├── Hero.tsx             Hero section with CTA (uses CubeHero)
 │   │   ├── AlgorithmSection.tsx Grid of algorithm sets
 │   │   ├── AlgorithmCard.tsx    Card linking to trainer
-│   │   ├── HowItWorks.tsx       3-step process section
-│   │   └── CTASection.tsx       [UNUSED]
+│   │   └── HowItWorks.tsx       3-step process section
 │   │
 │   ├── trainer/
 │   │   ├── TrainerSidebar.tsx   Left sidebar: session stats [PLACEHOLDER]
@@ -69,8 +75,11 @@ src/
 │   │
 │   ├── algorithms/
 │   │   ├── AlgorithmCard.tsx    Algorithm browse card (shows mezcla + solución)
+│   │   ├── AlgorithmCategoryCard.tsx  Card de categoría en /algorithms
+│   │   ├── AlgorithmFilter.tsx  Filtros de búsqueda (dificultad, shape, etc.)
 │   │   ├── AlgorithmModal.tsx   Detail modal with cube viewer + variants
-│   │   └── CubeViewer.tsx       cubing.js twisty-player wrapper with controls
+│   │   ├── CubeViewer.tsx       cubing.js twisty-player wrapper with controls
+│   │   └── CubeAlgorithmViewer.tsx Viewer de algoritmo con controles
 │   │
 │   └── Modals/
 │       └── TrainerModal.tsx     Modal showing algorithm selection grid
@@ -81,19 +90,21 @@ src/
 │   └── mirrorAlgorithm.ts      Mirror transformation for ergonomic pairs
 │
 ├── hooks/
-│   ├── useTrainer.ts           Basic trainer logic (fixed scrambles)
-│   └── useScrambledTrainer.ts  [PLANNED] Trainer with dynamic scrambles
+│   ├── useTrainer.ts           Trainer logic (fixed scrambles) — usado por los 5 trainers
+│   ├── useScrambledTrainer.ts  Trainer with dynamic scrambles (implementado, sin integrar)
+│   ├── TrainerContext.tsx      Context para stats del trainer
+│   └── TrainerStatsStore.ts    Mini store pub/sub (stats compartidas sidebar ↔ hooks)
 │
 └── data/
-    ├── WVCases.ts              Winter Variation cases [POPULATED]
-    ├── MWCases.ts              Magic Wonderful cases [POPULATED]
-    ├── f2lCases.ts             F2L cases [POPULATED]
+    ├── algorithmCatalog.ts     Metadatos de categorías (slug, iconos, filtros)
+    ├── WVCases.ts              Winter Variation cases (27) [POPULATED]
+    ├── MWCases.ts              Magic Wonderful cases (41) [POPULATED]
+    ├── f2lCases.ts             F2L cases (42) [POPULATED]
     ├── OLLCases.ts             OLL 57 cases [POPULATED]
     └── PLLCases.ts             PLL 21 cases [POPULATED]
 
 scripts/
 ├── validateCleanScrambles.ts               OLL 33: 500 scrambles, orientation + clean
-├── validateCleanScramblesOLL{34,46,51,52,55,56}.ts  OLL específicos, 500 scrambles c/u
 ├── validateScrambleDiversity.ts             OLL 33 uniqueness + D-equivalence
 └── validateScrambleGeneration.ts            General: 5 subsets, 20 iteraciones c/u
 ```
@@ -105,17 +116,19 @@ All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` 
 | Route | Component | Status | Details |
 |-------|-----------|--------|---------|
 | `/` | `src/pages/Home.tsx` | ✓ Working | Landing page |
+| `/algorithms` | `src/pages/algorithms/AlgorithmsHome.tsx` | ✓ Working | Índice de subsets |
+| `/about` | `src/pages/About.tsx` | ✓ Working | About page |
+| `/dev/generate` | `src/pages/dev/GeneratePreviews.tsx` | ✓ Working | Dev tool: generar previews |
 | `/trainer/wv` | `src/pages/trainer/WVTrainer.tsx` | ✓ Fixed | WV trainer |
 | `/trainer/mw` | `src/pages/trainer/MWTrainer.tsx` | ✓ Fixed | MW trainer |
 | `/trainer/oll` | `src/pages/trainer/OLLTrainer.tsx` | ✓ Working | OLL trainer |
 | `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | PLL trainer |
 | `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ✓ Fixed | F2L trainer |
-| `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser, PLL variation en 57/57 OLLs |
+| `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser (vía `/algorithms/:slug`), PLL variation en 57/57 OLLs |
 | `/algorithms/pll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | PLL algorithm browser |
 | `/algorithms/wv` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | WV algorithm browser |
 | `/algorithms/mw` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | MW algorithm browser |
 | `/algorithms/f2l` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | F2L algorithm browser |
-| `/about` | Not defined | ❌ Missing | Linked in Navbar but no route/page |
 
 ## Data Flow
 

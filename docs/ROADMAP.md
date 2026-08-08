@@ -79,12 +79,12 @@ Fix routes → Populate data → useTrainer hook → Keyboard support
 
 | Issue | Impact | Priority |
 |-------|--------|----------|
-| Route mapping wrong (WV→MW) | Trainer broken | **CRITICAL** |
-| Data files empty | Hardcoded data only | **CRITICAL** |
-| F2LTrainer not routable | F2L set unavailable | **HIGH** |
+| Route mapping wrong (WV→MW) | ✓ Resuelto en Phase 1 | — |
+| Data files empty | ✓ Resuelto en Phase 1 (5 datasets poblados) | — |
+| F2LTrainer not routable | ✓ Resuelto en Phase 1 (`/trainer/f2l`) | — |
 | CubeViewer is placeholder | No visualization | **MEDIUM** |
-| Keyboard shortcuts not implemented | Can't use trainer efficiently | **MEDIUM** |
-| TrainerTabs non-functional | Confusing UX | **LOW** |
+| Keyboard shortcuts not implemented | Solo SPACE implementado (revelar/siguiente); R no | **MEDIUM** |
+| TrainerTabs non-functional | ✓ Resuelto en Phase 1 (Link + useLocation) | — |
 
 ---
 

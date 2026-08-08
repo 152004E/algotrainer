@@ -63,13 +63,14 @@
    - Rejection guard + correction handling intactos
 
 6. **What exists but doesn't work**:
-   - CubeViewer (trainer): placeholder `<div>` only
-   - TrainerSidebar: hardcoded text, no real stats
-   - TrainerTabs: not functional, hardcoded active state
-   - pages/Trainer.tsx: dead file, no route
-   - `useTrainer` hook (partially done)
-   - Timer logic, keyboard shortcuts (SPACE, R)
-   - Real 3D cube viewer in trainer
+   - CubeViewer (trainer): placeholder `<div>` only — sin twisty-player real
+   - Real 3D cube viewer in trainer — pendiente (igual que arriba)
+   - Scrambles dinámicos en trainers: los 5 trainers usan `useTrainer` (scrambles fijos del dataset); `useScrambledTrainer` ya está implementado pero sin integrar
+   - Keyboard shortcuts: SPACE funciona (revelar / siguiente en TrainerLayout); shortcut `R` no implementado
+   - (✓ resuelto) TrainerSidebar ya muestra stats reales (recognition time, avg, solved) vía `trainerStatsStore`
+   - (✓ resuelto) TrainerTabs ya navega con `Link` + `useLocation` (estado activo por ruta)
+   - (✓ resuelto) `pages/Trainer.tsx` fue eliminado del repo
+   - (✓ resuelto) `useTrainer` es funcional y lo usan los 5 trainers
 
 ### Docs to Read
 - **`SCRAMBLE_GENERATION.md`** — full spec: Kociemba composition, boundary-only, rules, validation
@@ -94,7 +95,7 @@
 | Scramble diversity | scripts/validateScrambleDiversity.ts | ✓ Implemented |
 | OLL PLL variation | src/utils/scrambleService.ts | ✓ 57/57 OLLs, all 22 PLLs |
 | New Scramble button | src/pages/algorithms/AlgorithmCategory.tsx | ✓ All 57 OLLs |
-| Dynamic trainer hook | src/hooks/useScrambledTrainer.ts | ⏳ Planned |
+| Dynamic trainer hook | src/hooks/useScrambledTrainer.ts | ✓ Implementado (sin integrar) |
 
 ### Code Quality Standards
 - Functional components only

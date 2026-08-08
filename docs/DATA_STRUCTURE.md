@@ -2,6 +2,8 @@
 
 ## Core Types
 
+Todos los tipos viven en `src/types.ts` (junto a `src/types/cubing.d.ts`).
+
 ### AlgoCase
 Represents a single algorithm case.
 
@@ -143,15 +145,16 @@ export default WVCases;
 
 ---
 
-## Files That Need Data
+## Dataset Files — Estado Actual
 
 | File | Cases | Status |
 |------|-------|--------|
-| `f2lCases.ts` | ~50 (pairs 1-50) | ⚠️ Empty |
-| `WVCases.ts` | 27 | ⚠️ Empty |
-| `MWCases.ts` | 41 | ⚠️ Empty |
-| `OLLCases.ts` | 57 | ⚠️ Missing file |
-| `PLLCases.ts` | 21 | ⚠️ Missing file |
+| `f2lCases.ts` | 42 | ✓ Populated |
+| `WVCases.ts` | 27 | ✓ Populated |
+| `MWCases.ts` | 41 | ✓ Populated |
+| `OLLCases.ts` | 57 | ✓ Populated |
+| `PLLCases.ts` | 21 | ✓ Populated |
+| `algorithmCatalog.ts` | — | ✓ Populated (categorías: slug, iconos, filtros) |
 
 ---
 
@@ -176,6 +179,33 @@ function useTrainer(cases: AlgoCase[]): {
 - Tracks stats in session state
 - Measures time from case display to reveal
 - Reset on unmount (or per session)
+
+---
+
+## Hook: useScrambledTrainer (implementado, sin integrar)
+
+Igual API que `useTrainer` pero genera un scramble dinámico por caso vía `scrambleService.generateScramble()`.
+
+```ts
+function useScrambledTrainer(cases: AlgoCase[]): {
+  currentCase: AlgoCase;
+  scramble: string;        // generado fresco por caso
+  loading: boolean;        // mientras el scramble se genera
+  nextCase: () => void;
+  prevCase: () => void;
+  stats: SessionStats;
+  revealed: boolean;
+  revealAlgorithm: () => void;
+  recognitionTime: number;
+}
+```
+
+**Nota**: el hook existe en `src/hooks/useScrambledTrainer.ts` pero los 5 trainers todavía usan `useTrainer`.
+
+## Store: trainerStatsStore + TrainerContext
+
+- `src/hooks/TrainerStatsStore.ts` — mini store pub/sub. `useTrainer`/`useScrambledTrainer` publican stats (`set`), `TrainerSidebar` se suscribe (`subscribe`) para mostrarlas sin pasar props.
+- `src/hooks/TrainerContext.tsx` — `TrainerProvider` + `useTrainerContext()` exponen `{ stats, recognitionTime, revealed }` como alternativa a props.
 
 ---
 

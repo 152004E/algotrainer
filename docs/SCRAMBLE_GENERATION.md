@@ -165,19 +165,15 @@ Esto habilita la generación dinámica de scrambles y el botón "New Scramble" p
 
 ## Validation
 
-### Pre-existing scripts
+### Scripts existentes (solo 3 en `scripts/`)
 
 | Script | Propósito |
 |--------|-----------|
-| `scripts/validateCleanScrambles.ts` | OLL 33 — 500 scrambles: orientation, clean, redundancy, length |
-| `scripts/validateCleanScramblesOLL34.ts` | OLL 34 — 500 scrambles (mismos checks) |
-| `scripts/validateCleanScramblesOLL46.ts` | OLL 46 — 500 scrambles |
-| `scripts/validateCleanScramblesOLL51.ts` | OLL 51 — 500 scrambles |
-| `scripts/validateCleanScramblesOLL52.ts` | OLL 52 — 500 scrambles |
-| `scripts/validateCleanScramblesOLL55.ts` | OLL 55 — 500 scrambles |
-| `scripts/validateCleanScramblesOLL56.ts` | OLL 56 — 500 scrambles |
+| `scripts/validateCleanScrambles.ts` | OLL 33 — 500 scrambles: orientation, clean, redundancy, length (564/564) |
 | `scripts/validateScrambleDiversity.ts` | OLL 33 — uniqueness, suffix diversity |
 | `scripts/validateScrambleGeneration.ts` | General — 5 subsets, 20 iteraciones c/u |
+
+Nota: los scripts por-OLL (`validateCleanScramblesOLL{34,46,51,52,55,56}.ts`) ya no existen en el repo; sus resultados quedaron registrados en la tabla de validación de abajo.
 
 ### Verificación de PLLs
 

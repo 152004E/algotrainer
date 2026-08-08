@@ -27,6 +27,7 @@ algotrainer/
 │   │   ├── Rubik's_cube.svg
 │   │   └── fongoImg.png
 │   │
+│   ├── types.ts               — AlgoCase, AlgorithmCategory, SessionStats
 │   ├── types/
 │   │   └── cubing.d.ts         — JSX type augmentation para <twisty-player>
 │   │
@@ -36,11 +37,12 @@ algotrainer/
 │   │
 │   ├── pages/
 │   │   ├── Home.tsx            — /
+│   │   ├── About.tsx           — /about
 │   │   ├── algorithms/
-│   │   │   └── AlgorithmCategory.tsx  — browse de algoritmos por subset
+│   │   │   ├── AlgorithmsHome.tsx     — índice de subsets (/algorithms)
+│   │   │   └── AlgorithmCategory.tsx  — browse de algoritmos por subset (/algorithms/:slug)
 │   │   ├── dev/
-│   │   │   └── GeneratePreviews.tsx   — generación de previews (dev tool)
-│   │   ├── Trainer.tsx         — ⚠ archivo muerto, no tiene ruta
+│   │   │   └── GeneratePreviews.tsx   — generación de previews (dev tool, /dev/generate)
 │   │   └── trainer/
 │   │       ├── WVTrainer.tsx   — /trainer/wv
 │   │       ├── MWTrainer.tsx   — /trainer/mw
@@ -53,12 +55,16 @@ algotrainer/
 │   │   │   ├── Navbar.tsx
 │   │   │   ├── Footer.tsx
 │   │   │   ├── Button.tsx
-│   │   │   └── ThemeToggle.tsx
+│   │   │   ├── ThemeToggle.tsx
+│   │   │   └── ThemeToggleButton.tsx
 │   │   │
 │   │   ├── algorithms/
 │   │   │   ├── AlgorithmCard.tsx     — card con mezcla + solución
+│   │   │   ├── AlgorithmCategoryCard.tsx — card de categoría en /algorithms
+│   │   │   ├── AlgorithmFilter.tsx   — filtros (dificultad, shape, etc.)
 │   │   │   ├── AlgorithmModal.tsx    — modal con viewer + variantes
-│   │   │   └── CubeViewer.tsx        — twisty-player wrapper con controles
+│   │   │   ├── CubeViewer.tsx        — twisty-player wrapper con controles
+│   │   │   └── CubeAlgorithmViewer.tsx — viewer de algoritmo con controles
 │   │   │
 │   │   ├── cube/
 │   │   │   └── CubeHero.tsx          — twisty-player interactivo en Home
@@ -67,12 +73,11 @@ algotrainer/
 │   │   │   ├── Hero.tsx
 │   │   │   ├── AlgorithmSection.tsx
 │   │   │   ├── AlgorithmCard.tsx     — card de navegación a trainer
-│   │   │   ├── HowItWorks.tsx
-│   │   │   └── CTASection.tsx        — ⚠ sin uso
+│   │   │   └── HowItWorks.tsx        — (CTASection eliminado del repo)
 │   │   │
 │   │   ├── trainer/
-│   │   │   ├── TrainerSidebar.tsx     — stats placeholder
-│   │   │   ├── TrainerTabs.tsx        — navegación (no funcional)
+│   │   │   ├── TrainerSidebar.tsx     — stats reales vía trainerStatsStore
+│   │   │   ├── TrainerTabs.tsx        — navegación con Link + useLocation (funcional)
 │   │   │   ├── TrainerToolsSidebar.tsx — ayuda placeholder
 │   │   │   ├── CubeViewer.tsx         — ⚠ PLACEHOLDER, reemplazar con twisty-player
 │   │   │   ├── ScrambleBox.tsx        — muestra scramble string
@@ -83,20 +88,28 @@ algotrainer/
 │   │       └── TrainerModal.tsx       — modal con grid de algoritmos
 │   │
 │   ├── hooks/
-│   │   ├── useTrainer.ts             — lógica básica de trainer
-│   │   └── useScrambledTrainer.ts     — ⏳ trainer con scrambles dinámicos
+│   │   ├── useTrainer.ts             — lógica de trainer (scrambles fijos) — usado por los 5 trainers
+│   │   ├── useScrambledTrainer.ts     — ✓ implementado: trainer con scrambles dinámicos (sin integrar)
+│   │   ├── TrainerContext.tsx         — context para stats del trainer
+│   │   └── TrainerStatsStore.ts       — mini store pub/sub (stats compartidas)
 │   │
 │   ├── utils/
-│   │   ├── scrambleService.ts         — ⏳ generación dinámica de scrambles
+│   │   ├── scrambleService.ts         — ✓ generación dinámica de scrambles (Kociemba)
 │   │   ├── resolveVariants.ts        — resolución de variantes
 │   │   └── mirrorAlgorithm.ts        — mirror para pares ergonómicos
 │   │
 │   └── data/
+│       ├── algorithmCatalog.ts        — metadatos de categorías (slug, iconos, filtros)
 │       ├── OLLCases.ts               — 57 casos OLL
 │       ├── PLLCases.ts               — 21 casos PLL
 │       ├── WVCases.ts                — 27 casos Winter Variation
-│       ├── MWCases.ts                — 32 casos Magic Wonderful
-│       └── f2lCases.ts              — 41 casos F2L
+│       ├── MWCases.ts                — 41 casos Magic Wonderful
+│       └── f2lCases.ts              — 42 casos F2L
+│
+├── scripts/
+│   ├── validateCleanScrambles.ts     — OLL 33: 500 scrambles (564/564 clean)
+│   ├── validateScrambleDiversity.ts  — OLL 33 uniqueness + D-equivalence
+│   └── validateScrambleGeneration.ts — general: 5 subsets, 20 iteraciones
 │
 ├── public/
 ├── index.html
@@ -110,38 +123,36 @@ algotrainer/
 
 ```
 /                        → MainLayout → Home
+/algorithms              → MainLayout → AlgorithmsHome
+/algorithms/:slug        → MainLayout → AlgorithmCategory
+/about                   → MainLayout → About
+/dev/generate            → GeneratePreviews (dev tool)
 /trainer/wv              → TrainerLayout → WVTrainer
 /trainer/mw              → TrainerLayout → MWTrainer
 /trainer/oll             → TrainerLayout → OLLTrainer
 /trainer/pll             → TrainerLayout → PLLTrainer
 /trainer/f2l             → TrainerLayout → F2LTrainer
-/algorithms/oll          → AlgorithmCategory
-/algorithms/pll          → AlgorithmCategory
-/algorithms/wv           → AlgorithmCategory
-/algorithms/mw           → AlgorithmCategory
-/algorithms/f2l          → AlgorithmCategory
-/about                   → ⚠ NO EXISTE
 ```
 
-## Flujo de Datos — Scramble Generation (objetivo)
+## Flujo de Datos — Scramble Generation (implementado)
 
 ```
 data/XxxCases.ts → AlgoCase[]
   └─ case.scramble o case.algorithm (para WV)
 
-ScrambleService.generateScramble(caseData)
-  ├─ solveTwips con generatorMoves ["U","D","R","L","F","B"]
+ScrambleService.generateScramble(caseData)   ✓ Kociemba composition
+  ├─ experimentalSolve3x3x3IgnoringCenters (min2phase) + simplifyMoves
   ├─ retorna string diferente cada vez
   └─ mismo patrón que el scramble original (validado ✓)
 
-useScrambledTrainer(cases)
+useScrambledTrainer(cases)   ✓ implementado, sin integrar en trainers
   ├─ currentCase, scramble, loading
   ├─ nextCase() → genera nuevo scramble asíncrono
   └─ revealAlgorithm()
 
-Trainer Page
+Trainer Page (hoy usa useTrainer con scrambles fijos)
   ├─ ScrambleBox(scramble, loading)   — skeleton mientras carga
-  ├─ CubeViewer(scramble)             — twisty-player real
+  ├─ CubeViewer(scramble)             — twisty-player real (⚠ pendiente)
   ├─ AlgorithmBox(algorithm, revealed)
   └─ NextCaseButton(onNext)
 ```

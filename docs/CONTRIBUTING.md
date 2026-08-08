@@ -11,8 +11,8 @@
 
 2. **Install & run**:
    ```bash
-   npm install
-   npm run dev
+   pnpm install
+   pnpm run dev
    # Opens http://localhost:5173
    ```
 
@@ -82,8 +82,8 @@ export default function MyComponent({ value, onChange }: Props) {
 - [ ] No unused imports
 
 ### Logic (Hooks, Utilities)
-- [ ] TypeScript compiles (`npm run build`)
-- [ ] ESLint passes (`npm run lint`)
+- [ ] TypeScript compiles (`pnpm run build`)
+- [ ] ESLint passes (`pnpm run lint`)
 - [ ] Expected outputs for sample inputs
 
 ### Pages
@@ -157,8 +157,8 @@ Before submitting PR:
 
 - [ ] Fixes issue in `PLAN.md` (reference it)
 - [ ] Code follows style guide above
-- [ ] `npm run lint` passes
-- [ ] `npm run build` succeeds (no TS errors)
+- [ ] `pnpm run lint` passes
+- [ ] `pnpm run build` succeeds (no TS errors)
 - [ ] Tested in browser (golden path + edge cases)
 - [ ] No console errors/warnings
 - [ ] Dark mode works (if UI)
