@@ -2,9 +2,43 @@
 
 ## Estado Actual
 Rutas corregidas y datos poblados (5 datasets). Algoritmo de generación
-dinámica de scrambles validado (564/564 clean) y `useScrambledTrainer`
-implementado. Pendiente: integrar el hook en los trainers y reemplazar
-CubeViewer mockup.
+dinámica de scrambles validado (564/564 clean). **WV completado**: los 27
+casos diestros reales (algoritmos = strings originales de la página; el scramble
+es `invert(algorithm)` — el usuario confirmó en cubo real que las resoluciones
+son los verdaderos scrambles) reemplazaron el dataset roto, `useScrambledTrainer`
+está integrado en `WVTrainer` (scramble dinámico con variación PLL como OLL), y
+`scripts/verifyWVCases.ts` valida los 27 (165/165 checks). Pendiente: integrar
+el hook en los trainers restantes y reemplazar CubeViewer mockup.
+
+---
+
+## Referencia de Benchmark: csTimer
+
+Estamos construyendo AlgoTrainer comparándonos contra
+[csTimer](https://github.com/cs0x7f/cstimer) (el cronómetro/speedcuber
+trainer de facto de la comunidad) con el objetivo de **ser el mejor
+trainer de algoritmos para 3x3**.
+
+### Qué aprendimos del código de csTimer (auditoría 2026-08-08)
+
+1. **csTimer NO tiene base de datos de algoritmos** — genera scrambles
+   por "random state" con un solver (min2phase/Kociemba) y espera que el
+   usuario ponga el algoritmo. Su WV/VLS solo generan *estados* para
+   entrenar reconocimiento, no hojas de algoritmos.
+2. **Nuestra ventaja**: AlgoTrainer sí tiene una base de algoritmos
+   curada (188 casos) → es un *trainer* real, no un timer con scrambles.
+3. **Nuestra técnica es la misma**: la composición Kociemba
+   (`invert(algorithm)` como setup + perturbación + solver) equivale al
+   enfoque de estado aleatorio de csTimer, pero garantizando que el
+   scramble produce EXACTAMENTE el caso entrenado.
+4. **Lo que sí hay que copiarle a csTimer**: persistencia local
+   (localStorage/indexedDB), estadísticas reales (Ao5/Ao12, PBs),
+   casos débiles (repite los que fallas) y PWA/offline.
+
+### Objetivo
+Superar a csTimer como **trainer 3x3**: con hojas de algoritmos
+curadas, scrambles que generan el caso exacto, y un loop de feedback
+(weak cases + stats) que csTimer no tiene por diseño.
 
 ---
 
@@ -16,18 +50,19 @@ CubeViewer mockup.
   - WV usa `invert(algorithm)` como effectiveSetup
   - Cachea KPuzzle + target patterns por caseId
 
-- [x] **Crear `src/hooks/useScrambledTrainer.ts`** — implementado (wrapper sobre `scrambleService.generateScramble()`, estados `loading`/`scramble`/`currentCase`/`revealed`, `stats: SessionStats`). Sin integrar todavía en los trainers.
+- [x] **Crear `src/hooks/useScrambledTrainer.ts`** — implementado (wrapper sobre `scrambleService.generateScramble()`, estados `loading`/`scramble`/`currentCase`/`revealed`, `stats: SessionStats`).
+- [x] **Integrar `useScrambledTrainer` en `WVTrainer.tsx`** — WV es el primer trainer con scrambles dinámicos (antes mostraba `scramble: ""` vacío).
+- [x] **Variación PLL para WV** — el bloque genérico `c.id.startsWith("oll-")` en `scrambleService.ts` ahora cubre `oll- || wv-` (22 PLLs, máx 20 movimientos) y el botón "Nuevo Scramble" en `AlgorithmCategory.tsx` funciona para ambos.
+- [x] **`scripts/verifyWVCases.ts`** (`pnpm run verify-wv`) — 165/165: 27 casos, únicos up to AUF, inverso resuelve, EO ✓, D-layer resuelta, DFR arriba, FR edge en slot, `corners` correcto.
 
 - [ ] **Reemplazar `Components/trainer/CubeViewer.tsx`**
   - Mockup div → twisty-player real
   - Props: `scramble: string`, `algorithm?: string`
   - `experimentalSetupAlg = scramble`, `experimentalSetupAnchor = "start"`
 
-- [ ] **Actualizar `ScrambleBox.tsx`**
-  - Aceptar prop `loading: boolean`
-  - Mostrar skeleton animation mientras genera
+- [x] **Actualizar `ScrambleBox.tsx`** — prop `loading: boolean` con skeleton mientras genera.
 
-- [ ] **Actualizar trainers** (OLL/PLL/MW/WV/F2L)
+- [ ] **Actualizar trainers restantes** (OLL/PLL/MW/F2L)
   - Usar `useScrambledTrainer` en lugar de `useTrainer`
   - Pasar `scramble` + `loading` a `ScrambleBox` y `CubeViewer`
 
@@ -128,9 +163,15 @@ CubeViewer mockup.
 |---|---|
 | `pages/Trainer.tsx` | ✓ Eliminado del repo |
 | `Components/Home/CTASection.tsx` | ✓ Eliminado del repo |
-| `TrainerSidebar.tsx` | ✓ Funcional — stats reales vía `trainerStatsStore` |
+| `TrainerSidebar.tsx` | ✓ Funcional — stats reales vía `trainerStatsStore` (pero Ao5/Ao12/PB con "--") |
 | `TrainerTabs.tsx` | ✓ Funcional — `Link` + `useLocation` con estado activo |
 | `TrainerToolsSidebar.tsx` | Botones ? y ⌨ sin funcionalidad |
+| `hooks/TrainerContext.tsx` | ✗ Código muerto — no lo usa nadie (se usa `trainerStatsStore`) |
+| `hooks/TrainerStatsStore.ts` | ✗ Singleton global — las stats se comparten/mezclan entre trainers |
+| `Components/trainer/CubeViewer.tsx` | ✗ Mockup CSS — ya existe un twisty-player real en `Components/algorithms/CubeViewer.tsx` sin usar |
+| `data/WVCases.ts` | ✓ 27 casos diestros reales (algoritmos = strings de la página, verificados 27/27); `scramble: ""` es correcto porque el runtime usa `invert(algorithm)` = la resolución |
+| `data/PLLCases.ts` etc. | ⚠ `scramble === algorithm` en varios casos → aplicar el scramble 2x no resuelve; usar `invert(algorithm)` o scrambles dinámicos |
+| `useScrambledTrainer.ts` | ✓ Integrado en `WVTrainer`; los trainers OLL/PLL/MW/F2L aún usan `useTrainer` |
 
 ---
 
@@ -146,3 +187,37 @@ CubeViewer mockup.
 7. TrainerTabs funcional          ✓ hecho
 8. Páginas faltantes (/algorithms, /about) ✓ hechas
 ```
+
+---
+
+## Roadmap de Implementación (post-auditoría vs csTimer)
+
+Prioridades ordenadas por valor/esfuerzo, rumbo a ser el mejor trainer 3x3:
+
+### Fase A — Integración (desbloquea todo) — ~1-2 hrs
+- [x] `WVTrainer` → `useScrambledTrainer` (scramble dinámico + variación PLL, como OLL).
+- [ ] Reemplazar `useTrainer` → `useScrambledTrainer` en los trainers restantes
+      (MW/OLL/PLL/F2L). Arregla: `scramble === algorithm` en OLL/PLL.
+- [ ] Reusar `Components/algorithms/CubeViewer.tsx` (twisty-player real)
+      en el trainer; borrar el mockup.
+- [x] `ScrambleBox` con prop `loading` (skeleton mientras Kociemba genera).
+- [ ] Resetear stats por trainer (eliminar el singleton global o
+      parametrizarlo por trainer).
+- [ ] Borrar código muerto: `hooks/TrainerContext.tsx`, botones ? y ⌨.
+
+### Fase B — Automatizar validación de datos — ~2-3 hrs
+- [ ] Script que valide los **188 casos** (hoy solo OLL): el scramble
+      genera el estado correcto del caso y el algoritmo lo resuelve.
+- [ ] Script de consistencia de **parejas ergonómicas**:
+      `mirrorAlgorithm(OLL47) === OLL48`, etc.
+- [ ] Script de limpieza: algs parsean, sin pares redundantes.
+
+### Fase C — Loop de entrenamiento — ~4-6 hrs
+- [ ] **Persistencia en localStorage** (progreso, stats por trainer,
+      casos dominados) — como csTimer.
+- [ ] **Modo weak cases**: ponderar con `caseHistory` los casos que más
+      cuestan reconocer.
+- [ ] **Stats reales Ao5/Ao12 + timer de ejecución** (no solo
+      reconocimiento).
+- [ ] **Filtro por dificultad/subset** en los trainers.
+- [ ] Stats dashboard con gráficas de progreso (estilo csTimer).

@@ -125,6 +125,7 @@ All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` 
 | `/trainer/pll` | `src/pages/trainer/PLLTrainer.tsx` | ✓ Working | PLL trainer |
 | `/trainer/f2l` | `src/pages/trainer/F2LTrainer.tsx` | ✓ Fixed | F2L trainer |
 | `/algorithms/oll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | OLL algorithm browser (vía `/algorithms/:slug`), PLL variation en 57/57 OLLs |
+| `/trainer/wv` | `src/pages/trainer/WVTrainer.tsx` | ✓ Working | WV trainer con `useScrambledTrainer` (PLL variation en 27/27) |
 | `/algorithms/pll` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | PLL algorithm browser |
 | `/algorithms/wv` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | WV algorithm browser |
 | `/algorithms/mw` | `src/pages/algorithms/AlgorithmCategory.tsx` | ✓ Working | MW algorithm browser |
@@ -166,9 +167,9 @@ ScrambleService (singleton)
       └─ solveMin2Phase(target.applyAlg(pert)) → invert → solvedToPerturbed
       └─ scramble = simplifyMoves([solvedToPerturbed, invert(pert)].join(" "))
 
-AlgorithmCategory (for all 57 OLLs)
+AlgorithmCategory (for all 57 OLLs + 27 WV)
   ├─ dynamicScramble: string | undefined
-  ├─ handleNewScramble: () => void       [activado si id.startsWith("oll-")]
+  ├─ handleNewScramble: () => void       [activado si isPLLVariation(id) = oll- || wv-]
   └─ AlgorithmModal(dynamicScramble, onNewScramble)
     ├─ CubeViewer(setupAlg)               [twisty-player with scramble]
     └─ Button "Nuevo Scramble"            [visible en todos los OLLs]

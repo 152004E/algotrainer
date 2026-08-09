@@ -50,6 +50,8 @@ const MiniCubeIcon = ({ slug }: { slug: string }) => {
   );
 };
 
+const isPLLVariation = (id: string) => id.startsWith("oll-") || id.startsWith("wv-");
+
 const STORAGE_KEY = (s: string) => `algotrainer:filters:${s}`;
 
 const loadFilters = (slug: string | undefined) => {
@@ -99,7 +101,7 @@ const AlgorithmCategory = () => {
   }, [slug, search, activeFilters]);
 
   useEffect(() => {
-    if (selectedAlg?.id.startsWith("oll-")) {
+    if (selectedAlg && isPLLVariation(selectedAlg.id)) {
       setDynamicScramble(undefined);
       scrambleService.generateScramble(selectedAlg).then(setDynamicScramble);
     } else {
@@ -232,7 +234,7 @@ const AlgorithmCategory = () => {
           allAlgorithms={selectedAlgAlgorithms}
           onClose={() => setSelectedAlg(null)}
           dynamicScramble={dynamicScramble}
-          onNewScramble={selectedAlg.id.startsWith("oll-") ? handleNewScramble : undefined}
+          onNewScramble={isPLLVariation(selectedAlg.id) ? handleNewScramble : undefined}
         />
       )}
     </div>

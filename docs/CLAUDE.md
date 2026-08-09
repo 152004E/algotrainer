@@ -15,13 +15,14 @@
   - `getEffectiveSetup` siempre usa `invert(algorithm)`, nunca `c.scramble`
   - Frente=Verde, Arriba=Blanco (WCA standard)
   - 564/564 validated (pattern + clean), 100/100 unique scrambles OLL 33
-- **OLL PLL variation**: ALL 57 OLLs have PLL variation active
-  - `target = solved.applyAlg(pll).applyAlg(invert(OLL))` con 22 PLLs (skip + 21)
+- **OLL/WV PLL variation**: ALL 57 OLLs + 27 WV cases have PLL variation active
+  - `target = solved.applyAlg(pll).applyAlg(invert(case))` con 22 PLLs (skip + 21)
   - Sin AUF, sin rotaciones, sin M/E/S, sin wide moves
   - Max 20 moves, rejection guard, simplifyMoves
-  - Single generic block `if (c.id.startsWith("oll-"))` in scrambleService.ts
-  - 57/57 OLLs validated, botón "New Scramble" en todos
-- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL PLL variation completed
+  - Single generic block `if (c.id.startsWith("oll-") || c.id.startsWith("wv-"))` in scrambleService.ts
+  - 57/57 OLLs + 27/27 WV validated, botón "New Scramble" en ambos
+- **WV cases**: 27 diestros reales (slot FR) — `src/data/WVCases.ts`. `algorithm` = strings originales de la página; `scramble: ""` es correcto (runtime usa `invert(algorithm)` = la resolución, confirmado por el usuario en cubo real). Verificado 27/27, EO ✓, DFR arriba, FR edge en slot, `corners` = LL orientados excluyendo la pieza DFR. Script: `pnpm run verify-wv` (165/165 checks). Zurdos → `mirrorAlgorithm()`, fase futura.
+- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL+WV PLL variation completed, WVTrainer uses `useScrambledTrainer`
 - **Language**: Spanish UI + English code
 
 ### Critical Context
@@ -34,12 +35,12 @@
    - Pre-warming cache por case
    - Ver `SCRAMBLE_GENERATION.md` para spec completa
 
-2. **AlgorithmModal integration (ALL 57 OLLs)**:
+2. **AlgorithmModal integration (ALL 57 OLLs + 27 WV)**:
    - Props: `dynamicScramble?` + `onNewScramble?`
    - Botón "🔄 Nuevo Scramble" genera scramble diferente sin cambiar caso
    - Fallback a `invert(algorithm)` si no hay dynamic scramble
-   - Condición genérica: `selectedAlg?.id.startsWith("oll-")`
-   - 57/57 OLLs con botón "Nuevo Scramble" funcional
+   - Condición genérica: `isPLLVariation(id)` = `oll- || wv-`
+   - 57/57 OLLs + 27/27 WV con botón "Nuevo Scramble" funcional
 
 3. **Validation scripts**:
    - `scripts/validateCleanScrambles.ts`: 564/564 pattern + clean (todos los subsets)
@@ -54,8 +55,8 @@
    - Center correction: detecta y/y'/y2, aplica al target, añade inverse al final
    - AlgoCase type sin modificar
 
-5. **OLL PLL variation rules**:
-   - `target = solved.applyAlg(pll).applyAlg(invert(OLL))` — misma estrategia OLL 33/45
+5. **OLL/WV PLL variation rules**:
+   - `target = solved.applyAlg(pll).applyAlg(invert(case))` — misma estrategia OLL 33/45
    - 22 PLLs: skip, Ua, Ub, Aa, Ab, E, F, Ga, Gb, Gc, Gd, H, Ja, Jb, Na, Nb, Ra, Rb, T, V, Y, Z
    - Sin AUF, sin rotaciones, sin M/E/S, sin wide moves
    - Máximo 20 movimientos (regenera si excede)
@@ -65,7 +66,7 @@
 6. **What exists but doesn't work**:
    - CubeViewer (trainer): placeholder `<div>` only — sin twisty-player real
    - Real 3D cube viewer in trainer — pendiente (igual que arriba)
-   - Scrambles dinámicos en trainers: los 5 trainers usan `useTrainer` (scrambles fijos del dataset); `useScrambledTrainer` ya está implementado pero sin integrar
+   - Scrambles dinámicos en trainers: `WVTrainer` usa `useScrambledTrainer` ✓; los trainers OLL/PLL/MW/F2L usan `useTrainer` (scrambles fijos del dataset) — pendiente integrar
    - Keyboard shortcuts: SPACE funciona (revelar / siguiente en TrainerLayout); shortcut `R` no implementado
    - (✓ resuelto) TrainerSidebar ya muestra stats reales (recognition time, avg, solved) vía `trainerStatsStore`
    - (✓ resuelto) TrainerTabs ya navega con `Link` + `useLocation` (estado activo por ruta)

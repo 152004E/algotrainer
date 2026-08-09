@@ -97,7 +97,7 @@ class ScrambleService {
 ### `AlgorithmCategory.tsx`
 
 - Estado `dynamicScramble` (string | undefined)
-- `useEffect` sobre `selectedAlg` → genera scramble si `id.startsWith("oll-")` (todos los 57 OLLs)
+- `useEffect` sobre `selectedAlg` → genera scramble si `isPLLVariation(id)` = `oll- || wv-` (57 OLLs + 27 WV)
 - `handleNewScramble` genera nuevo scramble sobre el mismo caso
 - Pasa `dynamicScramble` + `onNewScramble` al modal
 
@@ -110,9 +110,9 @@ class ScrambleService {
 
 ---
 
-## OLL PLL Variation
+## OLL/WV PLL Variation
 
-A partir de la estrategia validada en OLL 33 y OLL 45, se extendió la variación PLL a los 57 casos OLL.
+A partir de la estrategia validada en OLL 33 y OLL 45, se extendió la variación PLL a los 57 casos OLL y a los 27 casos WV (mismo bloque genérico).
 
 ### Estrategia
 
@@ -124,12 +124,14 @@ Donde `pllAleatorio` es uno de los 22 PLLs definidos (skip + 21 PLLs estándar).
 
 ### Implementación
 
-En `scrambleService.ts`, un único bloque genérico `if (c.id.startsWith("oll-"))`:
+En `scrambleService.ts`, un único bloque genérico `if (c.id.startsWith("oll-") || c.id.startsWith("wv-"))`:
 
 1. Selecciona un PLL aleatorio uniforme entre los 22
-2. Construye el target: `solved.applyAlg(pll).applyAlg(invert(OLL))`
+2. Construye el target: `solved.applyAlg(pll).applyAlg(invert(case))`
 3. Aplica center correction si es necesario
 4. El resto del flujo (perturbación, solver, simplificación, rejection guard) es idéntico
+
+> Nota: los 27 WV usan `scramble: ""` en datos; el runtime deriva el setup con `invert(algorithm)` (regla del proyecto). La variación PLL para WV genera scrambles ≤20 movimientos preservando EO. Verificado con `pnpm run verify-wv`.
 
 ### Restricciones
 
@@ -150,16 +152,17 @@ En `scrambleService.ts`, un único bloque genérico `if (c.id.startsWith("oll-")
 | Big Lightning | 39, 40 | ✓ |
 | I shapes | 51, 52, 55, 56 | ✓ |
 | Resto (dots, L, line, P, W, fish, square, Sune, etc.) | 1-12, 17-32, 35-38, 41-44, 47-50, 53-54, 57 | ✓ |
+| WV (27 diestros) | wv-01 .. wv-27 | ✓ |
 
 ### AlgorithmCategory (New Scramble)
 
 En `AlgorithmCategory.tsx`, la condición para activar el botón "Nuevo Scramble" se simplificó a:
 
 ```typescript
-selectedAlg?.id.startsWith("oll-")
+const isPLLVariation = (id: string) => id.startsWith("oll-") || id.startsWith("wv-");
 ```
 
-Esto habilita la generación dinámica de scrambles y el botón "New Scramble" para los 57 OLLs.
+Esto habilita la generación dinámica de scrambles y el botón "New Scramble" para los 57 OLLs y los 27 WV.
 
 ---
 
@@ -217,7 +220,7 @@ Con `simplifyMoves` se garantizan 0 pares redundantes (consecutivos en la misma 
 | No dmove | Desalineación visual del cubo |
 | Full simplification (`simplifyMoves`) | Elimina todo par consecutivo en misma cara; cascadeo natural vía stack. La diversidad se mantiene porque el solver Kociemba produce caminos distintos |
 | Perturbación de 3-5 movimientos | Suficiente diversidad sin alargar demasiado el scramble |
-| PLL variation: `target = solved.applyAlg(pll).applyAlg(invert(OLL))` | Genera scrambles que preservan la orientación OLL pero terminan en PLLs variados |
+| PLL variation: `target = solved.applyAlg(pll).applyAlg(invert(case))` | Genera scrambles que preservan la orientación OLL/WV pero terminan en PLLs variados |
 | Sin AUF en PLL variation | Mantener consistencia con el flujo normal; el PLL resultante debe ser reconocible sin ajuste U |
-| Un solo bloque genérico `if (c.id.startsWith("oll-"))` | Reemplaza 7 bloques duplicados; misma lógica, menos código |
+| Un solo bloque genérico `if (c.id.startsWith("oll-") || c.id.startsWith("wv-"))` | Reemplaza bloques duplicados; misma lógica, menos código |
 | 22 PLLs (skip + 21 estándar) | Cubre todos los casos PLL posibles; skip permite que ocasionalmente el OLL resuelva el cubo |

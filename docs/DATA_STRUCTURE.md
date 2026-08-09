@@ -37,6 +37,11 @@ interface AlgoCase {
 
 ### Parejas Ergonómicas (Ergonomic Pairs)
 
+> **Regla de dominio**: TODO subset (WV, MW, OLL, PLL) tiene casos a la derecha y a la
+> izquierda. Los datos guardan el caso canónico (diestro); la variante zurda se deriva
+> con `mirrorAlgorithm()`. Esta doc suele quedar desactualizada — la fuente de verdad
+> es la regla en AGENTS.md + el código.
+
 Many OLL cases are left/right mirror images of each other. Two cases linked by `ergonomicPairId` form an **ergonomic pair** — learning one lets you derive the other by mirroring.
 
 **Rules**:
@@ -67,6 +72,7 @@ resolveAlternatives(case, allCases):
 | OLL 29 | OLL 30 | Awkward |
 | OLL 31 | OLL 32 | P Shapes |
 | OLL 36 | OLL 38 | W Shapes |
+| OLL 39 | OLL 40 | Big Lightning |
 | OLL 41 | OLL 42 | Awkward |
 | OLL 43 | OLL 44 | P Shapes |
 | OLL 47 | OLL 48 | L Shapes |
@@ -121,27 +127,22 @@ Each file exports default array of `AlgoCase[]`.
 const WVCases: AlgoCase[] = [
   {
     id: "wv-01",
-    name: "WV 1",
+    name: "Oriented",
     subset: "WV",
     difficulty: "Easy",
-    scramble: "R U R' U'",
-    algorithm: "(R U R' U') (R' F R2 U')",
-    description: "Standard WV from closed slot",
+    scramble: "", // regla: el runtime usa invert(algorithm), nunca c.scramble
+    algorithm: "L' U2' R U' R' U2' L",
+    corners: 3,
+    shape: "Oriented",
   },
-  {
-    id: "wv-02",
-    name: "WV 2",
-    subset: "WV",
-    difficulty: "Easy",
-    scramble: "R2 U' R2 U",
-    algorithm: "R U R' y' R' U R",
-    description: "WV rotated",
-  },
-  // ... 25 more cases (27 total)
+  // ... 26 more cases (27 total, wv-01..wv-27)
 ];
 
 export default WVCases;
 ```
+Los 27 WV son los casos canónicos **diestros** (slot FR). `corners` = LL orientados
+en la capa U excluyendo la pieza DFR (par arriba). Las variantes zurdas se derivan
+con `mirrorAlgorithm()` y NO se guardan en los datos.
 
 ---
 

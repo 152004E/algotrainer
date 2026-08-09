@@ -3,6 +3,23 @@
 ## Product Vision
 Speedcubing algorithm trainer. Users select a set (WV, MW, OLL, PLL, F2L), practice recognizing and executing algorithms, track progress.
 
+## Benchmark: csTimer
+Este proyecto se compara activamente contra
+[csTimer](https://github.com/cs0x7f/cstimer) — el estándar de facto de la
+comunidad speedcuber — con el objetivo de **convertirse en el mejor
+trainer de algoritmos para 3x3**.
+
+- **Ventaja estructural**: csTimer no tiene base de datos de algoritmos
+  (solo genera estados con Kociemba/min2phase); AlgoTrainer sí tiene
+  hojas curadas (188 casos) y scrambles que generan el caso exacto.
+- **Qué copiamos de csTimer**: persistencia local, stats reales
+  (Ao5/Ao12, PBs), casos débiles, y su técnica de scrambles por estado.
+- **Dónde lo superamos**: entrenamiento enfocado con feedback
+  (recognition timer, weak cases, filtros) — algo que csTimer no hace.
+
+Ver `PLAN.md` → "Referencia de Benchmark: csTimer" para la auditoría
+completa del código de csTimer y las fases A/B/C post-auditoría.
+
 ## Release Phases
 
 ### Phase 1: MVP Core (Foundation) — Week 1
@@ -24,12 +41,13 @@ Speedcubing algorithm trainer. Users select a set (WV, MW, OLL, PLL, F2L), pract
 ### Phase 2: Visual Polish — Week 2
 **Goal**: Professional-looking trainer with real cube visualization.
 
-- [ ] 3D Cube Viewer (integrate cubing.js or equivalent)
+- [ ] 3D Cube Viewer (integrate cubing.js or equivalent) — **reusar el twisty-player ya existente en `Components/algorithms/CubeViewer.tsx`**
 - [ ] Timer for case recognition
 - [ ] Better TrainerTabs (functional navigation, visual active state)
 - [ ] Improve TrainerSidebar stats display (progress bar, streak counter)
 - [ ] Better AlgorithmBox styling (larger font, clearer reveal state)
 - [ ] Dark mode refinements
+- [ ] Stats reales Ao5/Ao12 + timer de ejecución (no solo reconocimiento)
 
 **Metrics**: Trainer looks polished, cube visualizer working.
 
@@ -42,9 +60,11 @@ Speedcubing algorithm trainer. Users select a set (WV, MW, OLL, PLL, F2L), pract
 - [ ] Weak cases mode (show failures more often)
 - [ ] Time attack mode (30 sec to solve multiple cases)
 - [ ] Statistics dashboard (success rate, avg recognition time)
+- [ ] Persistencia en localStorage (progreso, stats por trainer, casos dominados) — como csTimer
 - [ ] Keyboard shortcut config page
 - [ ] Settings page (dark mode, language, etc.)
 - [ ] Custom algorithm lists
+- [ ] Integrar `useScrambledTrainer` en los 5 trainers (scrambles dinámicos de Kociemba)
 
 **Metrics**: Users can personalize their training.
 
@@ -85,6 +105,12 @@ Fix routes → Populate data → useTrainer hook → Keyboard support
 | CubeViewer is placeholder | No visualization | **MEDIUM** |
 | Keyboard shortcuts not implemented | Solo SPACE implementado (revelar/siguiente); R no | **MEDIUM** |
 | TrainerTabs non-functional | ✓ Resuelto en Phase 1 (Link + useLocation) | — |
+| WV scrambles vacíos (`scramble: ""`) | ✓ Resuelto: WVTrainer usa `useScrambledTrainer` con variación PLL (como OLL) | — |
+| Trainers usan scrambles estáticos (no `useScrambledTrainer`) | `scramble === algorithm` en OLL/PLL; no aprovecha Kociemba. Restan OLL/PLL/MW/F2L | **HIGH** |
+| `trainerStatsStore` singleton global | Stats se mezclan entre trainers | **MEDIUM** |
+| `TrainerContext.tsx` muerto + botones ?/⌨ sin función | Código muerto | **LOW** |
+| Sin validación automática de los 188 casos | Solo OLL + WV (27) validados; MW/PLL/F2L sin chequeo | **MEDIUM** |
+| Sin persistencia en localStorage | Progreso perdido al recargar (csTimer sí persiste) | **MEDIUM** |
 
 ---
 

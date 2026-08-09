@@ -26,3 +26,14 @@ Important:
   `git add`, `git push` ni crear PRs sin que el usuario lo pida explícitamente.
 - Cuando el trabajo esté listo, el agente debe decir "listo para commitear" y
   dejar que el usuario haga el commit.
+
+# Mirror Pairs — Regla de Dominio (NO re-explicar en cada chat)
+
+- **Todo subset** (WV, MW, OLL, PLL) tiene **casos a la derecha** y **casos a la izquierda**.
+  El software siempre funciona así. Los datos guardan el caso canónico (diestro); la variante
+  zurda se deriva con `mirrorAlgorithm()` (`src/utils/mirrorAlgorithm.ts`).
+- **WV**: los 27 casos actuales son los **diestros** (slot FR). Sus variantes zurdas son el mirror
+  del mismo caso, no casos nuevos del dataset.
+- **MW** (Magic Wonderful): es lo siguiente después de WV — **todo es con mirror**.
+- La documentación de datos (docs/*.md) tiende a desactualizarse; la fuente de verdad es esta
+  regla + el código.

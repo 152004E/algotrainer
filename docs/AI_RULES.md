@@ -44,6 +44,13 @@
 - No usar `solveTwips` (reemplazado por `experimentalSolve3x3x3IgnoringCenters`)
 - No aplicar `simplifyMoves` completo al scramble (mata diversidad)
 
+## Mirror Pairs (regla de dominio)
+- TODO subset (WV, MW, OLL, PLL) tiene casos a la derecha y a la izquierda
+- Los datos guardan el caso canónico (diestro); la variante zurda se deriva con `mirrorAlgorithm()`
+- WV actual: 27 casos diestros (slot FR); sus zurdos son mirrors del mismo caso
+- MW (Magic Wonderful): lo siguiente después de WV, todo con mirror
+- La doc de datos (docs/*.md) suele quedar desactualizada; la fuente de verdad es esta regla + el código
+
 ## Testing & Review
 - La validación tipográfica verifica corrección
 - UI changes need browser test before done
