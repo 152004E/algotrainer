@@ -3,8 +3,6 @@ import type { SolveVerification } from "../../utils/verifySolve";
 interface Props {
   verdict: SolveVerification | null;
   userMoves: string[];
-  algorithm: string;
-  helped: boolean;
   recognitionTime: number;
   executionTime: number;
   onRepeat: () => void;
@@ -18,15 +16,13 @@ function formatMs(ms: number): string {
 export default function FeedbackPanel({
   verdict,
   userMoves,
-  algorithm,
-  helped,
   recognitionTime,
   executionTime,
   onRepeat,
   onNext,
 }: Props) {
   const solved = verdict?.solved ?? false;
-  const status = helped ? "resuelto con ayuda" : solved ? "resuelto" : "incorrecto";
+  const status = solved ? "resuelto" : "incorrecto";
   const statusColor = solved
     ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
     : "bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300";
@@ -49,22 +45,12 @@ export default function FeedbackPanel({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400">
-            Tus movimientos
-          </div>
-          <div className="p-3 font-mono text-sm text-slate-700 dark:text-slate-200 break-all min-h-10">
-            {userMoves.length > 0 ? userMoves.join(" ") : "(sin movimientos)"}
-          </div>
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Tus movimientos
         </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400">
-            Algoritmo esperado
-          </div>
-          <div className="p-3 font-mono text-sm text-primary break-all min-h-10">
-            {algorithm}
-          </div>
+        <div className="p-3 font-mono text-sm text-slate-700 dark:text-slate-200 break-all min-h-10">
+          {userMoves.length > 0 ? userMoves.join(" ") : "(sin movimientos)"}
         </div>
       </div>
 
@@ -87,7 +73,7 @@ export default function FeedbackPanel({
         <button
           type="button"
           onClick={onRepeat}
-          className="px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold transition-colors"
+          className="px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold transition-colors"
         >
           Repetir
         </button>

@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import type { CubeViewerHandle } from "../Components/trainer/CubeViewer";
 import type { AlgoCase, SessionStats } from "../types";
 import { scrambleService } from "../utils/scrambleService";
 import { verifySolve, type SolveVerification } from "../utils/verifySolve";
 import { trainerStatsStore } from "./TrainerStatsStore";
 
 export type TrainerPhase = "recognize" | "execute" | "feedback";
-export type PracticeMode = "learn" | "practice";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -42,21 +42,20 @@ const INITIAL_STATS: SessionStats = {
 export function useExecutionTrainer(cases: AlgoCase[]) {
   const [shuffled] = useState(() => shuffle(cases));
   const [index, setIndex] = useState(0);
-  const [mode, setMode] = useState<PracticeMode>("practice");
   const [phase, setPhase] = useState<TrainerPhase>("recognize");
-  const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scramble, setScramble] = useState("");
+  const [solution, setSolution] = useState("");
   const [userMoves, setUserMoves] = useState<string[]>([]);
   const [verdict, setVerdict] = useState<SolveVerification | null>(null);
   const [executionTime, setExecutionTime] = useState(0);
   const [recognitionTime, setRecognitionTime] = useState(0);
-  const [helped, setHelped] = useState(false);
 
   const startRef = useRef(0);
   const execStartRef = useRef(0);
   const checkingRef = useRef(false);
   const mountedRef = useRef(true);
+  const cubeRef = useRef<CubeViewerHandle | null>(null);
 
   const [stats, setStats] = useState<SessionStats>({
     ...INITIAL_STATS,
@@ -64,20 +63,18 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   });
 
   const currentCase = shuffled[index] ?? shuffled[0];
-  const showAlgorithm = mode === "learn" || revealed;
 
   const loadCase = useCallback(async (c: AlgoCase) => {
     setLoading(true);
     setPhase("recognize");
-    setRevealed(false);
     setUserMoves([]);
     setVerdict(null);
     setExecutionTime(0);
-    setHelped(false);
     startRef.current = Date.now();
-    const s = await scrambleService.generateScramble(c);
+    const s = await scrambleService.generateTrainerCase(c);
     if (mountedRef.current) {
-      setScramble(s);
+      setScramble(s.scramble);
+      setSolution(s.solution);
       setLoading(false);
     }
   }, []);
@@ -101,8 +98,8 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   }, [phase]);
 
   useEffect(() => {
-    trainerStatsStore.set(stats, recognitionTime, showAlgorithm);
-  }, [stats, recognitionTime, showAlgorithm]);
+    trainerStatsStore.set(stats, recognitionTime, false);
+  }, [stats, recognitionTime]);
 
   const startExecution = useCallback(() => {
     if (phase !== "recognize") return;
@@ -110,29 +107,26 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
     setPhase("execute");
   }, [phase]);
 
-  const askHelp = useCallback(() => {
-    if (phase !== "recognize") return;
-    setHelped(true);
-    setRevealed(true);
-    execStartRef.current = Date.now();
-    setPhase("execute");
-  }, [phase]);
-
   const appendMove = useCallback(
     (move: string) => {
       if (phase !== "execute") return;
-      setUserMoves((prev) => [...prev, move]);
+      cubeRef.current?.addMove(move);
     },
     [phase],
   );
 
   const undoMove = useCallback(() => {
     if (phase !== "execute") return;
-    setUserMoves((prev) => prev.slice(0, -1));
+    cubeRef.current?.undo();
   }, [phase]);
 
   const clearMoves = useCallback(() => {
     setUserMoves([]);
+    cubeRef.current?.clear();
+  }, []);
+
+  const syncMoves = useCallback((alg: string) => {
+    setUserMoves(alg ? alg.split(/\s+/).filter(Boolean) : []);
   }, []);
 
   const check = useCallback(async () => {
@@ -140,16 +134,17 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
     checkingRef.current = true;
     const execMs = Date.now() - execStartRef.current;
     setExecutionTime(execMs);
+    const movesAlg = (await cubeRef.current?.getAlg()) || userMoves.join(" ");
     const result = await verifySolve(
       scramble,
-      userMoves.join(" "),
+      movesAlg,
       currentCase.algorithm,
     );
     setVerdict(result);
     setPhase("feedback");
     checkingRef.current = false;
 
-    const solved = result.solved && !helped;
+    const solved = result.solved;
     setStats((prev) => {
       const newStreak = solved ? prev.currentStreak + 1 : 0;
       return {
@@ -157,7 +152,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
         attempts: prev.attempts + 1,
         correct: solved ? prev.correct + 1 : prev.correct,
         wrong: solved ? prev.wrong : prev.wrong + 1,
-        helped: helped ? prev.helped + 1 : prev.helped,
+        helped: prev.helped,
         avgExecutionTime:
           (prev.avgExecutionTime * prev.attempts + execMs) /
           (prev.attempts + 1),
@@ -172,12 +167,12 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
             timestamp: Date.now(),
             executionTime: execMs,
             correct: result.solved,
-            helped,
+            helped: false,
           },
         ],
       };
     });
-  }, [phase, scramble, userMoves, currentCase, recognitionTime, helped]);
+  }, [phase, scramble, userMoves, currentCase, recognitionTime]);
 
   const nextCase = useCallback(() => {
     const nextIndex = (index + 1) % shuffled.length;
@@ -190,10 +185,6 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   const repeatCase = useCallback(() => {
     loadCase(currentCase);
   }, [loadCase, currentCase]);
-
-  const toggleMode = useCallback(() => {
-    setMode((m) => (m === "learn" ? "practice" : "learn"));
-  }, []);
 
   useEffect(() => {
     if (phase === "feedback") return;
@@ -219,12 +210,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
 
       const key = e.key;
       if (key === "2") {
-        setUserMoves((prev) => {
-          if (prev.length === 0) return prev;
-          const last = prev[prev.length - 1];
-          if (last.length === 1) return [...prev.slice(0, -1), `${last}2`];
-          return prev;
-        });
+        cubeRef.current?.doubleLast();
         return;
       }
       const face = key.toUpperCase();
@@ -239,19 +225,16 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   return {
     currentCase,
     scramble,
+    solution,
     loading,
-    mode,
-    toggleMode,
     phase,
-    revealed,
-    showAlgorithm,
-    helped,
     userMoves,
+    cubeRef,
     appendMove,
     undoMove,
     clearMoves,
+    syncMoves,
     startExecution,
-    askHelp,
     check,
     verdict,
     executionTime,

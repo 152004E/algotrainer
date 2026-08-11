@@ -1,43 +1,108 @@
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import "cubing/twisty";
-import { NotationGuideOverlay } from "./NotationGuide";
+
+export interface CubeViewerHandle {
+  addMove: (move: string) => void;
+  undo: () => void;
+  clear: () => void;
+  doubleLast: () => void;
+  getAlg: () => Promise<string>;
+}
 
 interface Props {
   scramble?: string;
   loading?: boolean;
   interactive?: boolean;
   moves?: string;
-  onUserMove?: (move: string) => void;
-  guide?: boolean;
+  onAlgChange?: (alg: string) => void;
 }
 
 type TwistyPlayerElement = {
   experimentalSetupAlg: string;
   alg: string;
-  jumpToStart: () => void;
   jumpToEnd: () => void;
   experimentalGet: { alg: () => Promise<unknown> };
+  experimentalModel: {
+    experimentalAddMove: (move: string) => void;
+    experimentalRemoveFinalChild: () => void;
+  };
 };
 
-export default function CubeViewer({
-  scramble,
-  loading,
-  interactive,
-  moves,
-  onUserMove,
-  guide,
-}: Props) {
+const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
+  { scramble, loading, interactive, moves, onAlgChange },
+  ref,
+) {
   const playerRef = useRef<TwistyPlayerElement | null>(null);
   const lastReportedRef = useRef("");
+  const interactiveRef = useRef(false);
+
+  interactiveRef.current = !!interactive;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      addMove(move: string) {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        el.experimentalModel.experimentalAddMove(move);
+      },
+      undo() {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        if (lastReportedRef.current.trim() === "") return;
+        el.experimentalModel.experimentalRemoveFinalChild();
+      },
+      clear() {
+        const el = playerRef.current;
+        if (!el) return;
+        el.alg = "";
+        el.jumpToEnd();
+      },
+      doubleLast() {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        void (async () => {
+          const raw = await el.experimentalGet.alg();
+          const tokens = String(raw).split(/\s+/).filter(Boolean);
+          const last = tokens[tokens.length - 1];
+          if (!last || last.length !== 1) return;
+          el.experimentalModel.experimentalRemoveFinalChild();
+          el.experimentalModel.experimentalAddMove(`${last}2`);
+        })();
+      },
+      getAlg() {
+        const el = playerRef.current;
+        if (!el) return Promise.resolve("");
+        return el.experimentalGet.alg().then((raw) => String(raw));
+      },
+    }),
+    [],
+  );
 
   useEffect(() => {
     const el = playerRef.current;
     if (!el || !scramble) return;
     el.experimentalSetupAlg = scramble;
-    el.alg = moves ?? "";
+    el.alg = "";
     el.jumpToEnd();
-    lastReportedRef.current = moves ?? "";
-  }, [scramble, moves, guide]);
+    lastReportedRef.current = "";
+  }, [scramble]);
+
+  useEffect(() => {
+    const el = playerRef.current;
+    if (!el || !scramble) return;
+    let cancelled = false;
+    void (async () => {
+      const playerAlg = String(await el.experimentalGet.alg());
+      if (cancelled) return;
+      if (playerAlg === (moves ?? "")) return;
+      el.alg = moves ?? "";
+      el.jumpToEnd();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [scramble, moves]);
 
   useEffect(() => {
     if (!interactive) return;
@@ -47,29 +112,22 @@ export default function CubeViewer({
       const el = playerRef.current;
       if (el && scramble) {
         try {
-          const raw = await el.experimentalGet.alg();
-          const current = String(raw);
-          const base = lastReportedRef.current;
-          if (current.startsWith(base) && current.length > base.length) {
+          const current = String(await el.experimentalGet.alg());
+          if (current !== lastReportedRef.current) {
             lastReportedRef.current = current;
-            const extra = current.slice(base.length).trim();
-            for (const m of extra.split(/\s+/).filter(Boolean)) {
-              onUserMove?.(m);
-            }
-          } else if (current !== base) {
-            lastReportedRef.current = current;
+            onAlgChange?.(current);
           }
         } catch {
           // player not ready yet
         }
       }
-      setTimeout(tick, 150);
+      setTimeout(tick, 100);
     };
     tick();
     return () => {
       active = false;
     };
-  }, [interactive, scramble, onUserMove]);
+  }, [interactive, scramble, onAlgChange]);
 
   if (loading || !scramble) {
     return (
@@ -80,18 +138,20 @@ export default function CubeViewer({
   return (
     <div className="relative w-80 h-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
       <twisty-player
-        key={guide ? "guide" : "free"}
+        key="free"
         ref={playerRef}
         puzzle="3x3x3"
         background="none"
         control-panel="none"
         viewer-link="none"
-        hint-facelets="none"
+        hint-facelets="floating"
+        experimental-setup-anchor="end"
+        experimental-stickering="WVLS"
         experimental-move-press-input={interactive ? "basic" : "none"}
-        experimental-drag-input={guide ? "none" : "auto"}
         style={{ width: "100%", height: "100%" }}
       />
-      {guide && <NotationGuideOverlay />}
     </div>
   );
-}
+});
+
+export default CubeViewer;
