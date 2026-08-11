@@ -55,6 +55,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
 
   const startRef = useRef(0);
   const execStartRef = useRef(0);
+  const checkingRef = useRef(false);
   const mountedRef = useRef(true);
 
   const [stats, setStats] = useState<SessionStats>({
@@ -135,7 +136,8 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   }, []);
 
   const check = useCallback(async () => {
-    if (phase !== "execute") return;
+    if (phase !== "execute" || checkingRef.current) return;
+    checkingRef.current = true;
     const execMs = Date.now() - execStartRef.current;
     setExecutionTime(execMs);
     const result = await verifySolve(
@@ -145,6 +147,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
     );
     setVerdict(result);
     setPhase("feedback");
+    checkingRef.current = false;
 
     const solved = result.solved && !helped;
     setStats((prev) => {
