@@ -14,6 +14,11 @@ const defaultStats: SessionStats = {
   longestStreak: 0,
   totalTime: 0,
   avgRecognitionTime: 0,
+  avgExecutionTime: 0,
+  attempts: 0,
+  correct: 0,
+  wrong: 0,
+  helped: 0,
   caseHistory: [],
 };
 

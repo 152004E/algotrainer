@@ -62,6 +62,11 @@ export interface SessionStats {
   longestStreak: number;
   totalTime: number;
   avgRecognitionTime: number;
+  avgExecutionTime: number;
+  attempts: number;
+  correct: number;
+  wrong: number;
+  helped: number;
   caseHistory: CaseAttempt[];
 }
 
@@ -69,6 +74,9 @@ export interface CaseAttempt {
   caseId: string;
   revealedAt: number;
   timestamp: number;
+  executionTime?: number;
+  correct?: boolean;
+  helped?: boolean;
 }
 
 export interface TrainerState {
