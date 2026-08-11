@@ -1,6 +1,7 @@
 {
   "name": "algotrainer",
   "private": true,
+  "license": "SEE LICENSE.md",
   "packageManager": "pnpm@11.2.2",
   "version": "0.0.0",
   "type": "module",
