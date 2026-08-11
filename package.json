@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "validate-scrambles": "npx tsx scripts/validateScrambleGeneration.ts",
     "validate-clean-scrambles": "npx tsx scripts/validateCleanScrambles.ts",
-    "verify-wv": "npx tsx scripts/verifyWVCases.ts"
+    "verify-wv": "npx tsx scripts/verifyWVCases.ts",
+    "verify-interactive-solve": "npx tsx scripts/verifyInteractiveSolve.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
