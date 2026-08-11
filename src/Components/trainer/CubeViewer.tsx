@@ -37,7 +37,7 @@ export default function CubeViewer({
     el.alg = moves ?? "";
     el.jumpToEnd();
     lastReportedRef.current = moves ?? "";
-  }, [scramble, moves]);
+  }, [scramble, moves, guide]);
 
   useEffect(() => {
     if (!interactive) return;

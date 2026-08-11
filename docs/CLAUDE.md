@@ -22,7 +22,7 @@
   - Single generic block `if (c.id.startsWith("oll-") || c.id.startsWith("wv-"))` in scrambleService.ts
   - 57/57 OLLs + 27/27 WV validated, botón "New Scramble" en ambos
 - **WV cases**: 27 diestros reales (slot FR) — `src/data/WVCases.ts`. `algorithm` = strings originales de la página; `scramble: ""` es correcto (runtime usa `invert(algorithm)` = la resolución, confirmado por el usuario en cubo real). Verificado 27/27, EO ✓, DFR arriba, FR edge en slot, `corners` = LL orientados excluyendo la pieza DFR. Script: `pnpm run verify-wv` (165/165 checks). Zurdos → `mirrorAlgorithm()`, fase futura.
-- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL+WV PLL variation completed, WVTrainer uses `useScrambledTrainer`
+- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL+WV PLL variation completed, WVTrainer uses `useExecutionTrainer` (ejecución interactiva en cubo virtual con verificación por estado)
 - **Language**: Spanish UI + English code
 
 ### Critical Context
@@ -64,9 +64,9 @@
    - Rejection guard + correction handling intactos
 
 6. **What exists but doesn't work**:
-   - CubeViewer (trainer): placeholder `<div>` only — sin twisty-player real
+   - CubeViewer (trainer): twisty-player real + interactivo ✓ (click en cubo via `experimental-move-press-input="basic"`, sync por polling de `experimentalGet.alg()`), guía de notaciones (overlay + leyenda, bloquea rotación)
    - Real 3D cube viewer in trainer — pendiente (igual que arriba)
-   - Scrambles dinámicos en trainers: `WVTrainer` usa `useScrambledTrainer` ✓; los trainers OLL/PLL/MW/F2L usan `useTrainer` (scrambles fijos del dataset) — pendiente integrar
+   - Scrambles dinámicos en trainers: `WVTrainer` usa `useExecutionTrainer` ✓ (fases recognize/execute/feedback, modos Aprender/Practicar); los trainers OLL/PLL/MW/F2L usan `useTrainer` (scrambles fijos del dataset) — pendiente integrar
    - Keyboard shortcuts: SPACE funciona (revelar / siguiente en TrainerLayout); shortcut `R` no implementado
    - (✓ resuelto) TrainerSidebar ya muestra stats reales (recognition time, avg, solved) vía `trainerStatsStore`
    - (✓ resuelto) TrainerTabs ya navega con `Link` + `useLocation` (estado activo por ruta)
@@ -97,6 +97,7 @@
 | OLL PLL variation | src/utils/scrambleService.ts | ✓ 57/57 OLLs, all 22 PLLs |
 | New Scramble button | src/pages/algorithms/AlgorithmCategory.tsx | ✓ All 57 OLLs |
 | Dynamic trainer hook | src/hooks/useScrambledTrainer.ts | ✓ Implementado (sin integrar) |
+| Interactive trainer hook | src/hooks/useExecutionTrainer.ts | ✓ Implementado + integrado en WVTrainer (verificación: `src/utils/verifySolve.ts`, `pnpm run verify-interactive-solve` = 135/135) |
 
 ### Code Quality Standards
 - Functional components only
