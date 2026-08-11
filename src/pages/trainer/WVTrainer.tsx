@@ -12,7 +12,7 @@ export default function WVTrainer() {
   return (
     <>
       <ScrambleBox scramble={scramble} loading={loading} />
-      <CubeViewer />
+      <CubeViewer scramble={scramble} loading={loading} />
       <AlgorithmBox algorithm={currentCase.algorithm} revealed={revealed} onReveal={revealAlgorithm} />
       <NextCaseButton onNext={nextCase} />
     </>
