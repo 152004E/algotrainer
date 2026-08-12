@@ -55,7 +55,6 @@ export default function WVTrainer() {
             scramble={scramble}
             loading={loading}
             interactive={phase === "execute"}
-            moves={phase === "recognize" ? "" : userMoves.join(" ")}
             onAlgChange={syncMoves}
           />
         </div>

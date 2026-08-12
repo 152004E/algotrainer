@@ -13,7 +13,6 @@ interface Props {
   scramble?: string;
   loading?: boolean;
   interactive?: boolean;
-  moves?: string;
   onAlgChange?: (alg: string) => void;
 }
 
@@ -29,7 +28,7 @@ type TwistyPlayerElement = {
 };
 
 const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
-  { scramble, loading, interactive, moves, onAlgChange },
+  { scramble, loading, interactive, onAlgChange },
   ref,
 ) {
   const playerRef = useRef<TwistyPlayerElement | null>(null);
@@ -89,22 +88,6 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
   }, [scramble]);
 
   useEffect(() => {
-    const el = playerRef.current;
-    if (!el || !scramble) return;
-    let cancelled = false;
-    void (async () => {
-      const playerAlg = String(await el.experimentalGet.alg());
-      if (cancelled) return;
-      if (playerAlg === (moves ?? "")) return;
-      el.alg = moves ?? "";
-      el.jumpToEnd();
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [scramble, moves]);
-
-  useEffect(() => {
     if (!interactive) return;
     let active = true;
     const tick = async () => {
@@ -144,9 +127,9 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
         background="none"
         control-panel="none"
         viewer-link="none"
-        hint-facelets="floating"
-        experimental-setup-anchor="end"
-        experimental-stickering="WVLS"
+        hint-facelets="none"
+        experimental-setup-anchor="start"
+        experimental-drag-input="auto"
         experimental-move-press-input={interactive ? "basic" : "none"}
         style={{ width: "100%", height: "100%" }}
       />

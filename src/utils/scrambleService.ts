@@ -161,24 +161,29 @@ export class ScrambleService {
   }
 
   async generateScramble(c: AlgoCase): Promise<string> {
-    const { scramble } = await this.generateCaseWithSolution(c);
+    const { scramble } = await this.generateCaseWithSolution(c, true);
     return scramble;
   }
 
   /**
-   * Scramble dinámico + la solución completa que lo resuelve.
-   * Para OLL/WV con variación PLL, `solution` incluye el algoritmo del caso
-   * seguido del PLL aleatorio usado (por eso sí resuelve el cubo mostrado).
+   * Scramble dinámico para el trainer + la solución completa que lo resuelve.
+   * Con variación PLL: el scramble muestra el caso WV con un PLL aleatorio, y
+   * `solution` es el algoritmo del caso seguido del inverso del PLL usado
+   * (por eso sí resuelve el cubo mostrado).
    */
   async generateTrainerCase(c: AlgoCase): Promise<{ scramble: string; solution: string }> {
-    return this.generateCaseWithSolution(c);
+    return this.generateCaseWithSolution(c, true);
   }
 
-  private async generateCaseWithSolution(c: AlgoCase): Promise<{ scramble: string; solution: string }> {
+  private async generateCaseWithSolution(
+    c: AlgoCase,
+    pllVariation: boolean,
+  ): Promise<{ scramble: string; solution: string }> {
     const { target, correction } = await this.prepareTarget(c);
 
     // --- OLL/WV PLL variation: pick random PLL, build target ---
-    const isPllVariation = c.id.startsWith("oll-") || c.id.startsWith("wv-");
+    const isPllVariation =
+      pllVariation && (c.id.startsWith("oll-") || c.id.startsWith("wv-"));
     const pll = isPllVariation ? randomPll() : null;
 
     let scrambleTarget = target;
@@ -210,14 +215,14 @@ export class ScrambleService {
     // Rejection: if scramble collapsed to base setup, regenerate
     const base = normalize(getEffectiveSetup(c));
     if (scramble === base) {
-      return this.generateCaseWithSolution(c);
+      return this.generateCaseWithSolution(c, pllVariation);
     }
 
     // Length constraint: max 20 moves for all OLL/WV PLL variation cases
     if (isPllVariation) {
       const len = scramble.trim().split(/\s+/).filter(Boolean).length;
       if (len > 20) {
-        return this.generateCaseWithSolution(c);
+        return this.generateCaseWithSolution(c, pllVariation);
       }
     }
 
