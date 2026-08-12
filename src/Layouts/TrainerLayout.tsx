@@ -10,6 +10,7 @@ export default function TrainerLayout() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.code === "Space" && document.activeElement?.tagName !== "INPUT") {
+        if (document.querySelector("[data-exec-trainer]")) return;
         e.preventDefault();
         const btn = document.querySelector<HTMLButtonElement>(
           "[data-next-case]"

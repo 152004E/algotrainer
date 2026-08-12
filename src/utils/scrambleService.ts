@@ -14,8 +14,8 @@ function normalize(s: string): string {
 /** Combine two moves on the same face; returns "" if they cancel. */
 function combineMoves(a: string, b: string): string {
   function power(suffix: string): number {
+    if (suffix === "2" || suffix === "2'") return 2;
     if (suffix === "'") return 3;
-    if (suffix === "2") return 2;
     return 1;
   }
   const face = a[0];
@@ -95,6 +95,35 @@ function hasStandardCenters(centers: number[]): boolean {
   return centers.every((c, i) => c === i);
 }
 
+const PLL_ALGS: { name: string; alg: string }[] = [
+  { name: "skip", alg: "" },
+  { name: "Ua",   alg: "R U' R U R U R U' R' U' R2" },
+  { name: "Ub",   alg: "R2 U R U R' U' R' U' R' U R'" },
+  { name: "Aa",   alg: "R' F R' B2 R F' R' B2 R2" },
+  { name: "Ab",   alg: "R B' R F2 R' B R F2 R2" },
+  { name: "E",    alg: "R' U' R U D' R2 U R' U R U' R U' R2 D" },
+  { name: "F",    alg: "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R" },
+  { name: "Ga",   alg: "R2 U R' U R' U' R U' R2 U' D R' U R D'" },
+  { name: "Gb",   alg: "R' U' R U D' R2 U R' U R U' R U' R2 D'" },
+  { name: "Gc",   alg: "R2 U' R U' R U R' U R2 D' U R U' R' D" },
+  { name: "Gd",   alg: "R U R' U' D R2 U' R U' R' U R' U R2 D'" },
+  { name: "H",    alg: "R2 U2 R U2 R2 U2 R2 U2 R U2 R2" },
+  { name: "Ja",   alg: "R U R' F' R U R' U' R' F R2 U' R'" },
+  { name: "Jb",   alg: "R' U2 R U R' U2 L U' R U L'" },
+  { name: "Na",   alg: "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'" },
+  { name: "Nb",   alg: "R' U R U' R' F' U' F R U R' F R' F' R U' R" },
+  { name: "Ra",   alg: "R U R' F' R U2 R' U2 R' F R U R U2 R'" },
+  { name: "Rb",   alg: "R' U2 R U2 R' F R U R' U' R' F' R2 U'" },
+  { name: "T",    alg: "R U R' U' R' F R2 U' R' U' R U R' F'" },
+  { name: "V",    alg: "R' U R' U' B' R' B2 U' B' U B' R B R" },
+  { name: "Y",    alg: "F R U' R' U' R U R' F' R U R' U' R' F R F'" },
+  { name: "Z",    alg: "R' U' R U' R U R U' R' U R U R2 U' R'" },
+];
+
+function randomPll(): { name: string; alg: string } {
+  return PLL_ALGS[Math.floor(Math.random() * PLL_ALGS.length)];
+}
+
 export class ScrambleService {
   private kp: KPuzzle | null = null;
   private targetCache = new Map<string, { target: KPattern; correction: string }>();
@@ -132,45 +161,40 @@ export class ScrambleService {
   }
 
   async generateScramble(c: AlgoCase): Promise<string> {
+    const { scramble } = await this.generateCaseWithSolution(c, true);
+    return scramble;
+  }
+
+  /**
+   * Scramble dinámico para el trainer + la solución completa que lo resuelve.
+   * Con variación PLL: el scramble muestra el caso WV con un PLL aleatorio, y
+   * `solution` es el algoritmo del caso seguido del inverso del PLL usado
+   * (por eso sí resuelve el cubo mostrado).
+   */
+  async generateTrainerCase(c: AlgoCase): Promise<{ scramble: string; solution: string }> {
+    return this.generateCaseWithSolution(c, true);
+  }
+
+  private async generateCaseWithSolution(
+    c: AlgoCase,
+    pllVariation: boolean,
+  ): Promise<{ scramble: string; solution: string }> {
     const { target, correction } = await this.prepareTarget(c);
 
     // --- OLL/WV PLL variation: pick random PLL, build target ---
+    const isPllVariation =
+      pllVariation && (c.id.startsWith("oll-") || c.id.startsWith("wv-"));
+    const pll = isPllVariation ? randomPll() : null;
+
     let scrambleTarget = target;
-    if (c.id.startsWith("oll-") || c.id.startsWith("wv-")) {
-      const pllAlgs: { name: string; alg: string }[] = [
-        { name: "skip", alg: "" },
-        { name: "Ua",   alg: "R U' R U R U R U' R' U' R2" },
-        { name: "Ub",   alg: "R2 U R U R' U' R' U' R' U R'" },
-        { name: "Aa",   alg: "R' F R' B2 R F' R' B2 R2" },
-        { name: "Ab",   alg: "R B' R F2 R' B R F2 R2" },
-        { name: "E",    alg: "R' U' R U D' R2 U R' U R U' R U' R2 D" },
-        { name: "F",    alg: "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R" },
-        { name: "Ga",   alg: "R2 U R' U R' U' R U' R2 U' D R' U R D'" },
-        { name: "Gb",   alg: "R' U' R U D' R2 U R' U R U' R U' R2 D'" },
-        { name: "Gc",   alg: "R2 U' R U' R U R' U R2 D' U R U' R' D" },
-        { name: "Gd",   alg: "R U R' U' D R2 U' R U' R' U R' U R2 D'" },
-        { name: "H",    alg: "R2 U2 R U2 R2 U2 R2 U2 R U2 R2" },
-        { name: "Ja",   alg: "R U R' F' R U R' U' R' F R2 U' R'" },
-        { name: "Jb",   alg: "R' U2 R U R' U2 L U' R U L'" },
-        { name: "Na",   alg: "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'" },
-        { name: "Nb",   alg: "R' U R U' R' F' U' F R U R' F R' F' R U' R" },
-        { name: "Ra",   alg: "R U R' F' R U2 R' U2 R' F R U R U2 R'" },
-        { name: "Rb",   alg: "R' U2 R U2 R' F R U R' U' R' F' R2 U'" },
-        { name: "T",    alg: "R U R' U' R' F R2 U' R' U' R U R' F'" },
-        { name: "V",    alg: "R' U R' U' B' R' B2 U' B' U B' R B R" },
-        { name: "Y",    alg: "F R U' R' U' R U R' F' R U R' U' R' F R F'" },
-        { name: "Z",    alg: "R' U' R U' R U R U' R' U R U R2 U' R'" },
-      ];
-      const pll = pllAlgs[Math.floor(Math.random() * pllAlgs.length)];
-      if (pll.alg) {
-        const kp = await this.getKPuzzle();
-        const setup = getEffectiveSetup(c);
-        scrambleTarget = kp.defaultPattern()
-          .applyAlg(new Alg(pll.alg))
-          .applyAlg(new Alg(setup));
-        if (correction) {
-          scrambleTarget = scrambleTarget.applyAlg(new Alg(correction));
-        }
+    if (pll?.alg) {
+      const kp = await this.getKPuzzle();
+      const setup = getEffectiveSetup(c);
+      scrambleTarget = kp.defaultPattern()
+        .applyAlg(new Alg(pll.alg))
+        .applyAlg(new Alg(setup));
+      if (correction) {
+        scrambleTarget = scrambleTarget.applyAlg(new Alg(correction));
       }
     }
     // -------------------------------------------
@@ -191,18 +215,30 @@ export class ScrambleService {
     // Rejection: if scramble collapsed to base setup, regenerate
     const base = normalize(getEffectiveSetup(c));
     if (scramble === base) {
-      return this.generateScramble(c);
+      return this.generateCaseWithSolution(c, pllVariation);
     }
 
     // Length constraint: max 20 moves for all OLL/WV PLL variation cases
-    if (c.id.startsWith("oll-") || c.id.startsWith("wv-")) {
+    if (isPllVariation) {
       const len = scramble.trim().split(/\s+/).filter(Boolean).length;
       if (len > 20) {
-        return this.generateScramble(c);
+        return this.generateCaseWithSolution(c, pllVariation);
       }
     }
 
-    return scramble;
+    const solution = normalize(
+      simplifyMoves(
+        [
+          correction ? INVERSE[correction] : "",
+          c.algorithm,
+          pll?.alg ? new Alg(pll.alg).invert().toString() : "",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      )
+    );
+
+    return { scramble, solution };
   }
 
   /** Pre-warm the cache for a list of cases (call once on load). */

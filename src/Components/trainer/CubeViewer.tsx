@@ -1,37 +1,140 @@
-export default function CubeViewer() {
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import "cubing/twisty";
+
+export interface CubeViewerHandle {
+  addMove: (move: string) => void;
+  undo: () => void;
+  clear: () => void;
+  doubleLast: () => void;
+  getAlg: () => Promise<string>;
+}
+
+interface Props {
+  scramble?: string;
+  loading?: boolean;
+  interactive?: boolean;
+  onAlgChange?: (alg: string) => void;
+}
+
+type TwistyPlayerElement = {
+  experimentalSetupAlg: string;
+  alg: string;
+  jumpToEnd: () => void;
+  experimentalGet: { alg: () => Promise<unknown> };
+  experimentalModel: {
+    experimentalAddMove: (move: string) => void;
+    experimentalRemoveFinalChild: () => void;
+  };
+};
+
+const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
+  { scramble, loading, interactive, onAlgChange },
+  ref,
+) {
+  const playerRef = useRef<TwistyPlayerElement | null>(null);
+  const lastReportedRef = useRef("");
+  const interactiveRef = useRef(false);
+
+  interactiveRef.current = !!interactive;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      addMove(move: string) {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        el.experimentalModel.experimentalAddMove(move);
+      },
+      undo() {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        if (lastReportedRef.current.trim() === "") return;
+        el.experimentalModel.experimentalRemoveFinalChild();
+      },
+      clear() {
+        const el = playerRef.current;
+        if (!el) return;
+        el.alg = "";
+        el.jumpToEnd();
+      },
+      doubleLast() {
+        const el = playerRef.current;
+        if (!el || !interactiveRef.current) return;
+        void (async () => {
+          const raw = await el.experimentalGet.alg();
+          const tokens = String(raw).split(/\s+/).filter(Boolean);
+          const last = tokens[tokens.length - 1];
+          if (!last || last.length !== 1) return;
+          el.experimentalModel.experimentalRemoveFinalChild();
+          el.experimentalModel.experimentalAddMove(`${last}2`);
+        })();
+      },
+      getAlg() {
+        const el = playerRef.current;
+        if (!el) return Promise.resolve("");
+        return el.experimentalGet.alg().then((raw) => String(raw));
+      },
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    const el = playerRef.current;
+    if (!el || !scramble) return;
+    el.experimentalSetupAlg = scramble;
+    el.alg = "";
+    el.jumpToEnd();
+    lastReportedRef.current = "";
+  }, [scramble]);
+
+  useEffect(() => {
+    if (!interactive) return;
+    let active = true;
+    const tick = async () => {
+      if (!active) return;
+      const el = playerRef.current;
+      if (el && scramble) {
+        try {
+          const current = String(await el.experimentalGet.alg());
+          if (current !== lastReportedRef.current) {
+            lastReportedRef.current = current;
+            onAlgChange?.(current);
+          }
+        } catch {
+          // player not ready yet
+        }
+      }
+      setTimeout(tick, 100);
+    };
+    tick();
+    return () => {
+      active = false;
+    };
+  }, [interactive, scramble, onAlgChange]);
+
+  if (loading || !scramble) {
+    return (
+      <div className="relative w-80 h-80 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800" />
+    );
+  }
+
   return (
-    <div className="relative group">
-      {/* Glow Effect */}
-      <div className="absolute -inset-4 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700"></div>
-
-      {/* Cube Container */}
-      <div className="relative w-80 h-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden">
-        {/* Simulated 3D Cube Rendering */}
-        <div className="transform rotate-12 flex gap-4">
-          <div className="cube-grid w-48 h-48 shadow-xl">
-            {/* Top/Front Mixed Mockup Colors */}
-            <div className="cube-face bg-white"></div>
-            <div className="cube-face bg-blue-500"></div>
-            <div className="cube-face bg-white"></div>
-            <div className="cube-face bg-red-500"></div>
-            <div className="cube-face bg-white"></div>
-            <div className="cube-face bg-red-500"></div>
-            <div className="cube-face bg-white"></div>
-            <div className="cube-face bg-blue-500"></div>
-            <div className="cube-face bg-white"></div>
-          </div>
-        </div>
-
-        {/* Control Buttons */}
-        <div className="absolute bottom-4 right-4 flex gap-2">
-          <button className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-            <span className="material-symbols-outlined text-sm">refresh</span>
-          </button>
-          <button className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-            <span className="material-symbols-outlined text-sm">3d_rotation</span>
-          </button>
-        </div>
-      </div>
+    <div className="relative w-80 h-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+      <twisty-player
+        key="free"
+        ref={playerRef}
+        puzzle="3x3x3"
+        background="none"
+        control-panel="none"
+        viewer-link="none"
+        hint-facelets="none"
+        experimental-setup-anchor="start"
+        experimental-drag-input="auto"
+        experimental-move-press-input={interactive ? "basic" : "none"}
+        style={{ width: "100%", height: "100%" }}
+      />
     </div>
   );
-}
+});
+
+export default CubeViewer;

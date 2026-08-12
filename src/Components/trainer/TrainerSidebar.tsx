@@ -64,6 +64,28 @@ export default function TrainerSidebar() {
                 {stats.casesPracticed}/{stats.totalCases}
               </span>
             </div>
+            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-slate-400 text-lg">check_circle</span>
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Success rate</span>
+              </div>
+              <span className="font-mono text-slate-600 dark:text-slate-400">
+                {stats.attempts > 0
+                  ? `${Math.round((stats.correct / stats.attempts) * 100)}%`
+                  : "--"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-slate-400 text-lg">bolt</span>
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Avg execution</span>
+              </div>
+              <span className="font-mono text-slate-600 dark:text-slate-400">
+                {stats.avgExecutionTime > 0
+                  ? `${(stats.avgExecutionTime / 1000).toFixed(2)}s`
+                  : "--"}
+              </span>
+            </div>
           </div>
         </div>
 
