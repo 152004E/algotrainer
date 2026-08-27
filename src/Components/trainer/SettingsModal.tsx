@@ -56,7 +56,7 @@ const RECOGNITION_TOGGLES: {
   },
   {
     key: "hideFaces",
-    label: "Ocultar caras",
+    label: "Ocultar cubo",
     description:
       "Oculta el cubo virtual durante el modo reconocimiento. Solo se ve el scramble, el algoritmo se revela manualmente.",
   },
