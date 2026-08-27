@@ -1,4 +1,6 @@
 import type { SolveVerification } from "../../utils/verifySolve";
+import PrimaryButton from "./PrimaryButton";
+import SecondaryButton from "./SecondaryButton";
 
 interface Props {
   verdict: SolveVerification | null;
@@ -70,24 +72,15 @@ export default function FeedbackPanel({
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <button
-          type="button"
-          onClick={onRepeat}
-          className="px-6 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold transition-colors"
-        >
+        <SecondaryButton onClick={onRepeat} className="h-14">
           Repetir
-        </button>
-        <button
-          data-next-case
-          type="button"
-          onClick={onNext}
-          className="group px-8 py-3 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
-        >
+        </SecondaryButton>
+        <PrimaryButton data-next-case onClick={onNext}>
           Siguiente caso
           <span className="material-symbols-outlined align-middle ml-1 group-hover:translate-x-0.5 transition-transform">
             arrow_forward
           </span>
-        </button>
+        </PrimaryButton>
       </div>
     </div>
   );

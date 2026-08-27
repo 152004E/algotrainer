@@ -2,16 +2,14 @@ import { useState } from "react";
 import ScrambleBox from "./ScrambleBox";
 import CubeViewer from "./CubeViewer";
 import FeedbackPanel from "./FeedbackPanel";
-import AlgorithmBox from "./AlgorithmBox";
+import AlgorithmReveal from "./AlgorithmReveal";
+import PrimaryButton from "./PrimaryButton";
+import SecondaryButton from "./SecondaryButton";
+import SpaceHint from "./SpaceHint";
+import { difficultyColors } from "./difficulty";
 import { useExecutionTrainer } from "../../hooks/useExecutionTrainer";
 import type { AlgoCase } from "../../types";
 import type { TrainerSettings } from "../../hooks/useTrainerSettings";
-
-const difficultyColors: Record<string, string> = {
-  Easy: "bg-emerald-500",
-  Medium: "bg-amber-500",
-  Hard: "bg-rose-500",
-};
 
 const FACE_MEANINGS = [
   { key: "R", en: "Right" },
@@ -87,27 +85,6 @@ function ControlsCard() {
   );
 }
 
-function AlgorithmReveal({
-  algorithm,
-  forceReveal,
-  revealed,
-  onReveal,
-}: {
-  algorithm: string;
-  forceReveal?: boolean;
-  revealed: boolean;
-  onReveal: () => void;
-}) {
-  const isRevealed = forceReveal || revealed;
-  return (
-    <AlgorithmBox
-      algorithm={algorithm}
-      revealed={isRevealed}
-      onReveal={onReveal}
-    />
-  );
-}
-
 export default function VirtualTrainerView({
   cases,
   settings,
@@ -155,11 +132,13 @@ export default function VirtualTrainerView({
             guide={resolution.guide}
             hintFacelets={resolution.hiddenFaces ? "floating" : "none"}
           />
-          {resolution.guide && (
-            <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
-              U Up · D Down · R Right · L Left · F Front · B Back
-            </div>
-          )}
+          <div className="flex h-5 items-center justify-center">
+            {resolution.guide && (
+              <span className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                U Up · D Down · R Right · L Left · F Front · B Back
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="w-full md:w-80 flex flex-col gap-4">
@@ -176,21 +155,15 @@ export default function VirtualTrainerView({
                 </h3>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <button
+              <div className="flex flex-col items-center gap-2">
+                <PrimaryButton
                   data-start-exec
-                  type="button"
                   onClick={startExecution}
-                  className="px-8 py-4 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  className="w-64"
                 >
                   Lo sé — Ejecutar
-                </button>
-                <span className="text-center text-xs text-slate-500 dark:text-slate-500">
-                  <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded font-mono text-xs border border-slate-300 dark:border-slate-700">
-                    Space
-                  </kbd>{" "}
-                  para ejecutar
-                </span>
+                </PrimaryButton>
+                <SpaceHint>para ejecutar</SpaceHint>
               </div>
             </>
           )}
@@ -216,33 +189,13 @@ export default function VirtualTrainerView({
               </div>
 
               <div className="flex justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={undoMove}
-                  className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors"
-                >
-                  Deshacer
-                </button>
-                <button
-                  type="button"
-                  onClick={clearMoves}
-                  className="px-4 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-medium transition-colors"
-                >
-                  Limpiar
-                </button>
+                <SecondaryButton onClick={undoMove}>Deshacer</SecondaryButton>
+                <SecondaryButton onClick={clearMoves}>Limpiar</SecondaryButton>
               </div>
 
-              <button
-                data-check
-                type="button"
-                onClick={check}
-                className="px-8 py-4 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
-              >
-                Comprobar{" "}
-                <kbd className="ml-1 px-2 py-0.5 bg-white/20 rounded font-mono text-sm">
-                  Space
-                </kbd>
-              </button>
+              <PrimaryButton data-check onClick={check} shortcut="Space" className="w-64">
+                Comprobar
+              </PrimaryButton>
             </>
           )}
 
