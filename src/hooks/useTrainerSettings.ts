@@ -21,7 +21,7 @@ export const DEFAULT_TRAINER_SETTINGS: TrainerSettings = {
     learnMode: true,
   },
   recognition: {
-    hideFaces: true,
+    hideFaces: false,
   },
   timer: {},
 };
@@ -39,7 +39,7 @@ export function loadTrainerSettings(): TrainerSettings {
         learnMode: Boolean(parsed.resolution?.learnMode ?? true),
       },
       recognition: {
-        hideFaces: Boolean(parsed.recognition?.hideFaces ?? true),
+        hideFaces: Boolean(parsed.recognition?.hideFaces ?? false),
       },
       timer: {},
     };

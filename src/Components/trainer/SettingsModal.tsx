@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { TrainerSettings } from "../../hooks/useTrainerSettings";
 import { DEFAULT_TRAINER_SETTINGS } from "../../hooks/useTrainerSettings";
+import ToggleSwitch from "./ToggleSwitch";
 
 interface Props {
   open: boolean;
@@ -74,7 +75,7 @@ export default function SettingsModal({
     recognition: { ...DEFAULT_TRAINER_SETTINGS.recognition, ...settings.recognition },
   }));
   const [activeTab, setActiveTab] = useState<TabKey>("resolution");
-  const [confirming, setConfirming] = useState(false);
+  const [showConfirmToast, setShowConfirmToast] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -91,7 +92,7 @@ export default function SettingsModal({
         },
       });
       setActiveTab("resolution");
-      setConfirming(false);
+      setShowConfirmToast(false);
     }
   }, [open, settings]);
 
@@ -104,27 +105,24 @@ export default function SettingsModal({
     }));
   };
 
-  const handleSave = () => {
-    if (!confirming) {
-      setConfirming(true);
-      return;
-    }
+  const handleSaveClick = () => {
+    setShowConfirmToast(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave(draft);
+    setShowConfirmToast(false);
     onClose();
   };
 
-  const handleCancel = () => {
-    if (confirming) {
-      setConfirming(false);
-    } else {
-      onClose();
-    }
+  const handleCancelSave = () => {
+    setShowConfirmToast(false);
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={handleCancel}
+      onClick={onClose}
     >
       <div
         className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md mx-4"
@@ -136,7 +134,7 @@ export default function SettingsModal({
           </h2>
           <button
             type="button"
-            onClick={handleCancel}
+            onClick={onClose}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
           >
             ✕
@@ -167,23 +165,21 @@ export default function SettingsModal({
             </p>
           )}
           {activeTab === "recognition" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {RECOGNITION_TOGGLES.map((toggle) => (
-                <div key={toggle.key}>
-                  <label className="flex items-center gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(draft.recognition[toggle.key])}
-                      onChange={(e) =>
-                        update("recognition", toggle.key, e.target.checked)
-                      }
-                      className="w-4 h-4 accent-primary"
-                    />
+                <div key={toggle.key} className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       {toggle.label}
                     </span>
-                  </label>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 ml-7 mt-1 leading-relaxed">
+                    <ToggleSwitch
+                      checked={Boolean(draft.recognition[toggle.key])}
+                      onChange={(checked) =>
+                        update("recognition", toggle.key, checked)
+                      }
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
                     {toggle.description}
                   </p>
                 </div>
@@ -191,23 +187,21 @@ export default function SettingsModal({
             </div>
           )}
           {activeTab === "resolution" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {RESOLUTION_TOGGLES.map((toggle) => (
-                <div key={toggle.key}>
-                  <label className="flex items-center gap-3 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(draft.resolution[toggle.key])}
-                      onChange={(e) =>
-                        update("resolution", toggle.key, e.target.checked)
-                      }
-                      className="w-4 h-4 accent-primary"
-                    />
+                <div key={toggle.key} className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       {toggle.label}
                     </span>
-                  </label>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 ml-7 mt-1 leading-relaxed">
+                    <ToggleSwitch
+                      checked={Boolean(draft.resolution[toggle.key])}
+                      onChange={(checked) =>
+                        update("resolution", toggle.key, checked)
+                      }
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
                     {toggle.description}
                   </p>
                 </div>
@@ -219,24 +213,45 @@ export default function SettingsModal({
         <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
           <button
             type="button"
-            onClick={handleCancel}
+            onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            {confirming ? "Cancelar" : "Cancelar"}
+            Cancelar
           </button>
           <button
             type="button"
-            onClick={handleSave}
-            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              confirming
-                ? "bg-amber-500 hover:bg-amber-600 text-white"
-                : "bg-primary hover:bg-blue-600 text-white"
-            }`}
+            onClick={handleSaveClick}
+            className="px-6 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
           >
-            {confirming ? "Confirmar" : "Guardar"}
+            Guardar
           </button>
         </div>
       </div>
+
+      {/* Confirmation Toast */}
+      {showConfirmToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-slate-800 dark:bg-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4">
+            <span className="text-sm">¿Guardar cambios?</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCancelSave}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSave}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary hover:bg-blue-600 text-white transition-colors"
+              >
+                Sí, guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
