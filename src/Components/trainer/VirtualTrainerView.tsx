@@ -112,6 +112,7 @@ export default function VirtualTrainerView({
   learnMode: boolean;
 }) {
   const [showGuide, setShowGuide] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
   const {
     currentCase,
     scramble,
@@ -145,6 +146,17 @@ export default function VirtualTrainerView({
           >
             {showGuide ? "Ocultar guía" : "Mostrar guía"}
           </button>
+          <button
+            type="button"
+            onClick={() => setShowHidden((h) => !h)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              showHidden
+                ? "bg-primary/80 border-primary text-white"
+                : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            Caras ocultas
+          </button>
           <CubeViewer
             ref={cubeRef}
             scramble={scramble}
@@ -152,6 +164,7 @@ export default function VirtualTrainerView({
             interactive={phase === "execute"}
             onAlgChange={syncMoves}
             guide={showGuide}
+            hintFacelets={showHidden ? "floating" : "none"}
           />
           {showGuide && (
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center">

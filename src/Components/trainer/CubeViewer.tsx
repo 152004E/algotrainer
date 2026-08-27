@@ -15,6 +15,7 @@ interface Props {
   interactive?: boolean;
   onAlgChange?: (alg: string) => void;
   guide?: boolean;
+  hintFacelets?: "none" | "auto" | "floating";
 }
 
 type TwistyPlayerElement = {
@@ -134,7 +135,7 @@ function computeFacePositions(coords: {
 }
 
 const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
-  { scramble, loading, interactive, onAlgChange, guide },
+  { scramble, loading, interactive, onAlgChange, guide, hintFacelets = "none" },
   ref,
 ) {
   const playerRef = useRef<TwistyPlayerElement | null>(null);
@@ -251,7 +252,7 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
         background="none"
         control-panel="none"
         viewer-link="none"
-        hint-facelets="none"
+        experimental-hint-facelets={hintFacelets}
         experimental-setup-anchor="start"
         experimental-drag-input="auto"
         style={{ width: "100%", height: "100%" }}
