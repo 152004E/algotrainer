@@ -266,24 +266,26 @@ export default function VirtualTrainerView({
             />
           )}
 
-          {/* Subtle learn-mode toggle + unified algorithm reveal */}
-          <div className="flex flex-col gap-3 mt-2">
-            <label className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={learnMode}
-                onChange={(e) => updateLearnMode(e.target.checked)}
-                className="w-3.5 h-3.5 accent-primary"
-              />
-              Modo aprender
-            </label>
-
+          {/* Unified algorithm reveal + learn-mode toggle */}
+          <div className="flex flex-col gap-2 mt-2">
             <AlgorithmReveal
               algorithm={solution}
               forceReveal={learnMode}
               revealed={revealed}
               onReveal={reveal}
             />
+
+            <button
+              type="button"
+              onClick={() => updateLearnMode(!learnMode)}
+              className={`w-full px-6 py-3 rounded-lg border font-medium text-sm cursor-pointer transition-colors ${
+                learnMode
+                  ? "bg-primary/10 border-primary/30 text-primary/70"
+                  : "bg-primary/5 text-primary/50 border-primary/20 hover:bg-primary/10 hover:text-primary/70"
+              }`}
+            >
+              {learnMode ? "Modo aprender: ON" : "Modo aprender: OFF"}
+            </button>
           </div>
         </div>
       </div>
