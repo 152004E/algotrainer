@@ -239,10 +239,10 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
 
   useEffect(() => {
     const el = playerRef.current as
-      | (TwistyPlayerElement & { experimentalHintFacelets?: string })
+      | (TwistyPlayerElement & { hintFacelets?: string })
       | null;
-    if (el && "experimentalHintFacelets" in el) {
-      el.experimentalHintFacelets = hintFacelets;
+    if (el && "hintFacelets" in el) {
+      el.hintFacelets = hintFacelets;
     }
   }, [hintFacelets]);
 
