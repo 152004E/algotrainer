@@ -20,11 +20,32 @@ const TABS: { key: TabKey; label: string }[] = [
 const RESOLUTION_TOGGLES: {
   key: keyof TrainerSettings["resolution"];
   label: string;
+  description: string;
 }[] = [
-  { key: "guide", label: "Guía de caras" },
-  { key: "hiddenFaces", label: "Caras ocultas" },
-  { key: "controls", label: "Controles del cubo" },
-  { key: "learnMode", label: "Modo aprender" },
+  {
+    key: "guide",
+    label: "Guía de caras",
+    description:
+      "Muestra las letras de cada cara (U, D, R, L, F, B) proyectadas en 3D sobre el cubo, siguiendo la rotación de la cámara.",
+  },
+  {
+    key: "hiddenFaces",
+    label: "Caras ocultas",
+    description:
+      "Dibuja las caras no visibles del cubo como un fantasma translúcido en el mismo cubo (hint facelets de cubing.js).",
+  },
+  {
+    key: "controls",
+    label: "Controles del cubo",
+    description:
+      "Muestra la tarjeta con los significados de las teclas (U/D/R/L/F/B, Shift, 2, Z, Space) durante la fase de ejecución.",
+  },
+  {
+    key: "learnMode",
+    label: "Modo aprender",
+    description:
+      "Muestra siempre el algoritmo recomendado para cada caso, sin necesidad de revelarlo manualmente.",
+  },
 ];
 
 export default function SettingsModal({
@@ -39,6 +60,7 @@ export default function SettingsModal({
     resolution: { ...DEFAULT_TRAINER_SETTINGS.resolution, ...settings.resolution },
   }));
   const [activeTab, setActiveTab] = useState<TabKey>("resolution");
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -51,6 +73,7 @@ export default function SettingsModal({
         },
       });
       setActiveTab("resolution");
+      setConfirming(false);
     }
   }, [open, settings]);
 
@@ -63,10 +86,27 @@ export default function SettingsModal({
     }));
   };
 
+  const handleSave = () => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    onSave(draft);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    if (confirming) {
+      setConfirming(false);
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={onClose}
+      onClick={handleCancel}
     >
       <div
         className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md mx-4"
@@ -78,7 +118,7 @@ export default function SettingsModal({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCancel}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
           >
             ✕
@@ -116,22 +156,24 @@ export default function SettingsModal({
           {activeTab === "resolution" && (
             <div className="flex flex-col gap-4">
               {RESOLUTION_TOGGLES.map((toggle) => (
-                <label
-                  key={toggle.key}
-                  className="flex items-center gap-3 cursor-pointer select-none"
-                >
-                  <input
-                    type="checkbox"
-                    checked={Boolean(draft.resolution[toggle.key])}
-                    onChange={(e) =>
-                      update("resolution", toggle.key, e.target.checked)
-                    }
-                    className="w-4 h-4 accent-primary"
-                  />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
-                    {toggle.label}
-                  </span>
-                </label>
+                <div key={toggle.key}>
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(draft.resolution[toggle.key])}
+                      onChange={(e) =>
+                        update("resolution", toggle.key, e.target.checked)
+                      }
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                      {toggle.label}
+                    </span>
+                  </label>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 ml-7 mt-1 leading-relaxed">
+                    {toggle.description}
+                  </p>
+                </div>
               ))}
             </div>
           )}
@@ -140,17 +182,21 @@ export default function SettingsModal({
         <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-slate-800">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCancel}
             className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            Cancelar
+            {confirming ? "Cancelar" : "Cancelar"}
           </button>
           <button
             type="button"
-            onClick={() => onSave(draft)}
-            className="px-6 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
+            onClick={handleSave}
+            className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              confirming
+                ? "bg-amber-500 hover:bg-amber-600 text-white"
+                : "bg-primary hover:bg-blue-600 text-white"
+            }`}
           >
-            Guardar
+            {confirming ? "Confirmar" : "Guardar"}
           </button>
         </div>
       </div>
