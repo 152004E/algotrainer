@@ -5,6 +5,7 @@ import FeedbackPanel from "./FeedbackPanel";
 import AlgorithmBox from "./AlgorithmBox";
 import { useExecutionTrainer } from "../../hooks/useExecutionTrainer";
 import type { AlgoCase } from "../../types";
+import type { TrainerSettings } from "../../hooks/useTrainerSettings";
 
 const difficultyColors: Record<string, string> = {
   Easy: "bg-emerald-500",
@@ -20,24 +21,6 @@ const FACE_MEANINGS = [
   { key: "F", en: "Front" },
   { key: "B", en: "Back" },
 ];
-
-function AlgorithmReveal({
-  algorithm,
-  forceReveal,
-}: {
-  algorithm: string;
-  forceReveal?: boolean;
-}) {
-  const [revealed, setRevealed] = useState(false);
-  const isRevealed = forceReveal || revealed;
-  return (
-    <AlgorithmBox
-      algorithm={algorithm}
-      revealed={isRevealed}
-      onReveal={() => setRevealed(true)}
-    />
-  );
-}
 
 function ControlsCard() {
   const [open, setOpen] = useState(true);
@@ -104,15 +87,39 @@ function ControlsCard() {
   );
 }
 
+function AlgorithmReveal({
+  algorithm,
+  forceReveal,
+  revealed,
+  onReveal,
+}: {
+  algorithm: string;
+  forceReveal?: boolean;
+  revealed: boolean;
+  onReveal: () => void;
+}) {
+  const isRevealed = forceReveal || revealed;
+  return (
+    <AlgorithmBox
+      algorithm={algorithm}
+      revealed={isRevealed}
+      onReveal={onReveal}
+    />
+  );
+}
+
 export default function VirtualTrainerView({
   cases,
-  learnMode,
+  settings,
+  onSettingsChange,
 }: {
   cases: AlgoCase[];
-  learnMode: boolean;
+  settings: TrainerSettings;
+  onSettingsChange: (s: TrainerSettings) => void;
 }) {
-  const [showGuide, setShowGuide] = useState(false);
-  const [showHidden, setShowHidden] = useState(false);
+  const { resolution } = settings;
+  const learnMode = resolution.learnMode;
+
   const {
     currentCase,
     scramble,
@@ -131,7 +138,16 @@ export default function VirtualTrainerView({
     recognitionTime,
     nextCase,
     repeatCase,
+    revealed,
+    reveal,
   } = useExecutionTrainer(cases);
+
+  const updateLearnMode = (v: boolean) => {
+    onSettingsChange({
+      ...settings,
+      resolution: { ...settings.resolution, learnMode: v },
+    });
+  };
 
   return (
     <div data-exec-trainer className="w-full flex flex-col items-center gap-6">
@@ -139,34 +155,16 @@ export default function VirtualTrainerView({
 
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full justify-center">
         <div className="flex flex-col items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowGuide((g) => !g)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            {showGuide ? "Ocultar guía" : "Mostrar guía"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowHidden((h) => !h)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              showHidden
-                ? "bg-primary/80 border-primary text-white"
-                : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            Caras ocultas
-          </button>
           <CubeViewer
             ref={cubeRef}
             scramble={scramble}
             loading={loading}
             interactive={phase === "execute"}
             onAlgChange={syncMoves}
-            guide={showGuide}
-            hintFacelets={showHidden ? "floating" : "none"}
+            guide={resolution.guide}
+            hintFacelets={resolution.hiddenFaces ? "floating" : "none"}
           />
-          {showGuide && (
+          {resolution.guide && (
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
               U Up · D Down · R Right · L Left · F Front · B Back
             </div>
@@ -186,8 +184,6 @@ export default function VirtualTrainerView({
                   {currentCase.name}
                 </h3>
               </div>
-
-              {learnMode && <AlgorithmReveal algorithm={solution} forceReveal />}
 
               <div className="flex flex-col gap-2">
                 <button
@@ -210,7 +206,7 @@ export default function VirtualTrainerView({
 
           {phase === "execute" && (
             <>
-              <ControlsCard />
+              {resolution.controls && <ControlsCard />}
 
               <div className="flex flex-wrap justify-center gap-1.5 min-h-8">
                 {userMoves.map((m, i) => (
@@ -260,18 +256,35 @@ export default function VirtualTrainerView({
           )}
 
           {phase === "feedback" && (
-            <>
-              <FeedbackPanel
-                verdict={verdict}
-                userMoves={userMoves}
-                recognitionTime={recognitionTime}
-                executionTime={executionTime}
-                onRepeat={repeatCase}
-                onNext={nextCase}
-              />
-              <AlgorithmReveal key={currentCase.id} algorithm={solution} />
-            </>
+            <FeedbackPanel
+              verdict={verdict}
+              userMoves={userMoves}
+              recognitionTime={recognitionTime}
+              executionTime={executionTime}
+              onRepeat={repeatCase}
+              onNext={nextCase}
+            />
           )}
+
+          {/* Subtle learn-mode toggle + unified algorithm reveal */}
+          <div className="flex flex-col gap-3 mt-2">
+            <label className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={learnMode}
+                onChange={(e) => updateLearnMode(e.target.checked)}
+                className="w-3.5 h-3.5 accent-primary"
+              />
+              Modo aprender
+            </label>
+
+            <AlgorithmReveal
+              algorithm={solution}
+              forceReveal={learnMode}
+              revealed={revealed}
+              onReveal={reveal}
+            />
+          </div>
         </div>
       </div>
     </div>

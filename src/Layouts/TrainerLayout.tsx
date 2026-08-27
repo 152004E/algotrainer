@@ -4,6 +4,12 @@ import TrainerSidebar from "../Components/trainer/TrainerSidebar";
 import TrainerTabs from "../Components/trainer/TrainerTabs";
 import TrainerToolsSidebar from "../Components/trainer/TrainerToolsSidebar";
 import TrainerModeToggle, { type TrainerMode } from "../Components/trainer/TrainerModeToggle";
+import SettingsModal from "../Components/trainer/SettingsModal";
+import {
+  loadTrainerSettings,
+  saveTrainerSettings,
+  type TrainerSettings,
+} from "../hooks/useTrainerSettings";
 
 const STORAGE_KEY = "algotrainer:trainerMode";
 
@@ -19,7 +25,8 @@ function readStoredMode(): TrainerMode | null {
 export default function TrainerLayout() {
   const location = useLocation();
   const [mode, setMode] = useState<TrainerMode | null>(readStoredMode);
-  const [learnMode, setLearnMode] = useState(false);
+  const [settings, setSettings] = useState<TrainerSettings>(loadTrainerSettings);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const choose = (m: TrainerMode) => {
     setMode(m);
@@ -28,6 +35,11 @@ export default function TrainerLayout() {
     } catch {
       // ignore storage errors
     }
+  };
+
+  const updateSettings = (s: TrainerSettings) => {
+    setSettings(s);
+    saveTrainerSettings(s);
   };
 
   useEffect(() => {
@@ -57,7 +69,7 @@ export default function TrainerLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-white dark:bg-background-dark text-slate-900 dark:text-slate-100">
       {/* LEFT SIDEBAR */}
-      <TrainerSidebar />
+      <TrainerSidebar onOpenSettings={() => setSettingsOpen(true)} />
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col items-center p-8 bg-white dark:bg-background-dark">
@@ -72,20 +84,26 @@ export default function TrainerLayout() {
             <TrainerModeToggle
               mode={mode}
               onModeChange={choose}
-              learnMode={learnMode}
-              onLearnChange={setLearnMode}
             />
           )}
         </div>
 
         {/* TRAINER CONTENT */}
         <div className="flex-1 w-full flex flex-col items-center justify-center gap-8">
-          <Outlet context={{ mode, learnMode }} />
+          <Outlet context={{ mode, settings, onSettingsChange: updateSettings }} />
         </div>
       </main>
 
       {/* RIGHT SIDEBAR */}
       <TrainerToolsSidebar />
+
+      {/* SETTINGS MODAL */}
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        onSave={updateSettings}
+      />
     </div>
   );
 }

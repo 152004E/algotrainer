@@ -50,6 +50,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
   const [verdict, setVerdict] = useState<SolveVerification | null>(null);
   const [executionTime, setExecutionTime] = useState(0);
   const [recognitionTime, setRecognitionTime] = useState(0);
+  const [revealed, setRevealed] = useState(false);
 
   const startRef = useRef(0);
   const execStartRef = useRef(0);
@@ -70,6 +71,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
     setUserMoves([]);
     setVerdict(null);
     setExecutionTime(0);
+    setRevealed(false);
     startRef.current = Date.now();
     const s = await scrambleService.generateTrainerCase(c);
     if (mountedRef.current) {
@@ -77,6 +79,10 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
       setSolution(s.solution);
       setLoading(false);
     }
+  }, []);
+
+  const reveal = useCallback(() => {
+    setRevealed(true);
   }, []);
 
   useEffect(() => {
@@ -246,5 +252,7 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
     stats,
     nextCase,
     repeatCase,
+    revealed,
+    reveal,
   };
 }
