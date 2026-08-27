@@ -5,7 +5,9 @@ export interface TrainerSettings {
     controls: boolean;
     learnMode: boolean;
   };
-  recognition: Record<string, never>;
+  recognition: {
+    hideFaces: boolean;
+  };
   timer: Record<string, never>;
 }
 
@@ -18,7 +20,9 @@ export const DEFAULT_TRAINER_SETTINGS: TrainerSettings = {
     controls: true,
     learnMode: true,
   },
-  recognition: {},
+  recognition: {
+    hideFaces: true,
+  },
   timer: {},
 };
 
@@ -34,7 +38,9 @@ export function loadTrainerSettings(): TrainerSettings {
         controls: Boolean(parsed.resolution?.controls ?? true),
         learnMode: Boolean(parsed.resolution?.learnMode ?? true),
       },
-      recognition: {},
+      recognition: {
+        hideFaces: Boolean(parsed.recognition?.hideFaces ?? true),
+      },
       timer: {},
     };
   } catch {

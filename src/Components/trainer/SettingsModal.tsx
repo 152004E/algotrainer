@@ -48,6 +48,19 @@ const RESOLUTION_TOGGLES: {
   },
 ];
 
+const RECOGNITION_TOGGLES: {
+  key: keyof TrainerSettings["recognition"];
+  label: string;
+  description: string;
+}[] = [
+  {
+    key: "hideFaces",
+    label: "Ocultar caras",
+    description:
+      "Oculta el cubo virtual durante el modo reconocimiento. Solo se ve el scramble, el algoritmo se revela manualmente.",
+  },
+];
+
 export default function SettingsModal({
   open,
   onClose,
@@ -58,6 +71,7 @@ export default function SettingsModal({
     ...DEFAULT_TRAINER_SETTINGS,
     ...settings,
     resolution: { ...DEFAULT_TRAINER_SETTINGS.resolution, ...settings.resolution },
+    recognition: { ...DEFAULT_TRAINER_SETTINGS.recognition, ...settings.recognition },
   }));
   const [activeTab, setActiveTab] = useState<TabKey>("resolution");
   const [confirming, setConfirming] = useState(false);
@@ -70,6 +84,10 @@ export default function SettingsModal({
         resolution: {
           ...DEFAULT_TRAINER_SETTINGS.resolution,
           ...settings.resolution,
+        },
+        recognition: {
+          ...DEFAULT_TRAINER_SETTINGS.recognition,
+          ...settings.recognition,
         },
       });
       setActiveTab("resolution");
@@ -149,9 +167,28 @@ export default function SettingsModal({
             </p>
           )}
           {activeTab === "recognition" && (
-            <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">
-              Sin ajustes por ahora.
-            </p>
+            <div className="flex flex-col gap-4">
+              {RECOGNITION_TOGGLES.map((toggle) => (
+                <div key={toggle.key}>
+                  <label className="flex items-center gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(draft.recognition[toggle.key])}
+                      onChange={(e) =>
+                        update("recognition", toggle.key, e.target.checked)
+                      }
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                      {toggle.label}
+                    </span>
+                  </label>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 ml-7 mt-1 leading-relaxed">
+                    {toggle.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
           {activeTab === "resolution" && (
             <div className="flex flex-col gap-4">

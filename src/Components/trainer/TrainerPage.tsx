@@ -14,7 +14,7 @@ export default function TrainerPage({ cases }: { cases: AlgoCase[] }) {
   if (!mode) return null;
 
   return mode === "passive" ? (
-    <PassiveTrainerView cases={cases} />
+    <PassiveTrainerView cases={cases} settings={settings} />
   ) : (
     <VirtualTrainerView cases={cases} settings={settings} />
   );
