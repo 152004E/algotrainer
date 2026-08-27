@@ -12,6 +12,7 @@ export interface TrainerSettings {
 }
 
 const STORAGE_KEY = "algotrainer:trainerSettings";
+const SETTINGS_VERSION = 2;
 
 export const DEFAULT_TRAINER_SETTINGS: TrainerSettings = {
   resolution: {
@@ -31,6 +32,9 @@ export function loadTrainerSettings(): TrainerSettings {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_TRAINER_SETTINGS };
     const parsed = JSON.parse(raw);
+    if (!parsed || parsed.version !== SETTINGS_VERSION) {
+      return { ...DEFAULT_TRAINER_SETTINGS };
+    }
     return {
       resolution: {
         guide: Boolean(parsed.resolution?.guide ?? true),
@@ -50,7 +54,10 @@ export function loadTrainerSettings(): TrainerSettings {
 
 export function saveTrainerSettings(settings: TrainerSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...settings, version: SETTINGS_VERSION }),
+    );
   } catch {
     // ignore storage errors
   }
