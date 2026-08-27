@@ -20,7 +20,11 @@ export default function PassiveTrainerView({
     <div className="w-full flex flex-col items-center gap-6">
       <ScrambleBox scramble={scramble} loading={loading} />
       {!settings.recognition.hideFaces && (
-        <CubeViewer scramble={scramble} loading={loading} guide={settings.resolution.guide} />
+        <CubeViewer
+          scramble={scramble}
+          loading={loading}
+          hintFacelets={settings.resolution.hiddenFaces ? "floating" : "none"}
+        />
       )}
       <AlgorithmBox
         algorithm={currentCase.algorithm}
