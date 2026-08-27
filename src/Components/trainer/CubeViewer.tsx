@@ -28,18 +28,9 @@ type TwistyPlayerElement = {
     experimentalRemoveFinalChild: () => void;
     twistySceneModel: {
       orbitCoordinates: {
-        get: () => Promise<{
-          latitude: number;
-          longitude: number;
-          distance: number;
-        }>;
-        addFreshListener: (
-          cb: (coords: {
-            latitude: number;
-            longitude: number;
-            distance: number;
-          }) => void,
-        ) => () => void;
+        get: () => Promise<OrbitCoords>;
+        addFreshListener: (cb: (coords: OrbitCoords) => void) => void;
+        removeFreshListener: (cb: (coords: OrbitCoords) => void) => void;
       };
     };
   };
@@ -60,6 +51,14 @@ const FACE_NORMALS: Record<string, Vec3> = {
 const CUBE_FACE_R = 0.55;
 const BACK_OFFSET_PCT = 40;
 const CAMERA_FOV_DEG = 20;
+
+type OrbitCoords = {
+  latitude: number;
+  longitude: number;
+  distance: number;
+};
+
+const DEFAULT_ORBIT: OrbitCoords = { latitude: 35, longitude: 30, distance: 6 };
 
 const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a: Vec3, b: Vec3): Vec3 => [
@@ -134,6 +133,8 @@ function computeFacePositions(coords: {
   return out;
 }
 
+const INITIAL_FACE_POSITIONS = computeFacePositions(DEFAULT_ORBIT);
+
 const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
   { scramble, loading, interactive, onAlgChange, guide, hintFacelets = "none" },
   ref,
@@ -141,7 +142,9 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
   const playerRef = useRef<TwistyPlayerElement | null>(null);
   const lastReportedRef = useRef("");
   const interactiveRef = useRef(false);
-  const [facePositions, setFacePositions] = useState<Record<string, FacePos>>({});
+  const [facePositions, setFacePositions] = useState<Record<string, FacePos>>(
+    INITIAL_FACE_POSITIONS,
+  );
 
   interactiveRef.current = !!interactive;
 
@@ -222,30 +225,33 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
 
   useEffect(() => {
     if (!guide) return;
-    let unsubscribe: (() => void) | void;
     let cancelled = false;
+    let cleanup: (() => void) | undefined;
     const setup = () => {
+      if (cancelled || cleanup) return;
       const el = playerRef.current;
-      if (!el || cancelled) return;
+      if (!el) return;
       try {
-        unsubscribe = el.experimentalModel.twistySceneModel.orbitCoordinates.addFreshListener(
-          (coords) => setFacePositions(computeFacePositions(coords)),
-        );
-        el.experimentalModel.twistySceneModel.orbitCoordinates
-          .get()
-          .then((coords) => {
-            if (!cancelled) setFacePositions(computeFacePositions(coords));
-          })
-          .catch(() => {});
+        const orbit = el.experimentalModel.twistySceneModel.orbitCoordinates;
+        const listener = (coords: OrbitCoords) => {
+          if (!coords) return;
+          setFacePositions(computeFacePositions(coords));
+        };
+        orbit.addFreshListener(listener);
+        cleanup = () => orbit.removeFreshListener(listener);
       } catch {
         // orbit tracking not available
       }
     };
-    const retry = setTimeout(setup, 100);
+    setup();
+    const timer = window.setInterval(() => {
+      setup();
+      if (cleanup) window.clearInterval(timer);
+    }, 100);
     return () => {
       cancelled = true;
-      clearTimeout(retry);
-      if (typeof unsubscribe === "function") unsubscribe();
+      window.clearInterval(timer);
+      cleanup?.();
     };
   }, [guide]);
 
