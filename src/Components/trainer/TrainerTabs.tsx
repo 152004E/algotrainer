@@ -12,7 +12,7 @@ export default function TrainerTabs() {
   const location = useLocation();
 
   return (
-    <div className="absolute top-0 left-0 right-0 p-6 flex justify-center border-b border-slate-100 dark:border-slate-800">
+        <div className="w-full p-6 flex justify-center border-b border-slate-100 dark:border-slate-800">
       <nav className="flex items-center gap-8">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;

@@ -208,19 +208,23 @@ export function useExecutionTrainer(cases: AlgoCase[]) {
       const target = e.target as HTMLElement | null;
       if (target?.tagName === "INPUT" || target?.tagName === "TEXTAREA") return;
 
-      const key = e.key;
-      if (key === "2") {
-        cubeRef.current?.doubleLast();
-        return;
-      }
-      const face = key.toUpperCase();
-      if (!FACES.includes(face)) return;
-      if (e.shiftKey) appendMove(`${face}'`);
-      else appendMove(face);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [phase, appendMove]);
+    const key = e.key;
+    if (key === "2") {
+      cubeRef.current?.doubleLast();
+      return;
+    }
+    if (key.toLowerCase() === "z") {
+      undoMove();
+      return;
+    }
+    const face = key.toUpperCase();
+    if (!FACES.includes(face)) return;
+    if (e.shiftKey) appendMove(`${face}'`);
+    else appendMove(face);
+  };
+  window.addEventListener("keydown", handler);
+  return () => window.removeEventListener("keydown", handler);
+}, [phase, appendMove, undoMove]);
 
   return {
     currentCase,
