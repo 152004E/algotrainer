@@ -222,17 +222,29 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
 
   useEffect(() => {
     if (!guide) return;
-    const el = playerRef.current;
-    if (!el) return;
     let unsubscribe: (() => void) | void;
-    try {
-      unsubscribe = el.experimentalModel.twistySceneModel.orbitCoordinates.addFreshListener(
-        (coords) => setFacePositions(computeFacePositions(coords)),
-      );
-    } catch {
-      // orbit tracking not available
-    }
+    let cancelled = false;
+    const setup = () => {
+      const el = playerRef.current;
+      if (!el || cancelled) return;
+      try {
+        unsubscribe = el.experimentalModel.twistySceneModel.orbitCoordinates.addFreshListener(
+          (coords) => setFacePositions(computeFacePositions(coords)),
+        );
+        el.experimentalModel.twistySceneModel.orbitCoordinates
+          .get()
+          .then((coords) => {
+            if (!cancelled) setFacePositions(computeFacePositions(coords));
+          })
+          .catch(() => {});
+      } catch {
+        // orbit tracking not available
+      }
+    };
+    const retry = setTimeout(setup, 100);
     return () => {
+      cancelled = true;
+      clearTimeout(retry);
       if (typeof unsubscribe === "function") unsubscribe();
     };
   }, [guide]);
