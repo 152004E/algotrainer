@@ -237,6 +237,15 @@ const CubeViewer = forwardRef<CubeViewerHandle, Props>(function CubeViewer(
     };
   }, [guide]);
 
+  useEffect(() => {
+    const el = playerRef.current as
+      | (TwistyPlayerElement & { experimentalHintFacelets?: string })
+      | null;
+    if (el && "experimentalHintFacelets" in el) {
+      el.experimentalHintFacelets = hintFacelets;
+    }
+  }, [hintFacelets]);
+
   if (loading || !scramble) {
     return (
       <div className="relative w-80 h-80 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800" />
