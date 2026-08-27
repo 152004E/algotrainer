@@ -30,12 +30,6 @@ const RESOLUTION_TOGGLES: {
       "Muestra las letras de cada cara (U, D, R, L, F, B) proyectadas en 3D sobre el cubo, siguiendo la rotación de la cámara.",
   },
   {
-    key: "hiddenFaces",
-    label: "Caras ocultas",
-    description:
-      "Dibuja las caras no visibles del cubo como un fantasma translúcido en el mismo cubo (hint facelets de cubing.js).",
-  },
-  {
     key: "controls",
     label: "Controles del cubo",
     description:
@@ -54,6 +48,12 @@ const RECOGNITION_TOGGLES: {
   label: string;
   description: string;
 }[] = [
+  {
+    key: "hiddenFaces",
+    label: "Caras ocultas",
+    description:
+      "Dibuja las caras no visibles del cubo como un fantasma translúcido en el mismo cubo (hint facelets de cubing.js).",
+  },
   {
     key: "hideFaces",
     label: "Ocultar caras",

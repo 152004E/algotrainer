@@ -130,7 +130,7 @@ export default function VirtualTrainerView({
             interactive={phase === "execute"}
             onAlgChange={syncMoves}
             guide={resolution.guide}
-            hintFacelets={resolution.hiddenFaces ? "floating" : "none"}
+            hintFacelets={settings.recognition.hiddenFaces ? "floating" : "none"}
           />
           <div className="flex h-5 items-center justify-center">
             {resolution.guide && (

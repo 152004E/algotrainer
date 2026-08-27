@@ -27,7 +27,7 @@ export default function PassiveTrainerView({
             <CubeViewer
               scramble={scramble}
               loading={loading}
-              hintFacelets={settings.resolution.hiddenFaces ? "floating" : "none"}
+              hintFacelets={settings.recognition.hiddenFaces ? "floating" : "none"}
             />
           )}
           <div className="h-5" />
