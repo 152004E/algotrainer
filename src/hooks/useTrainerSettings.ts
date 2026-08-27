@@ -18,10 +18,10 @@ export const DEFAULT_TRAINER_SETTINGS: TrainerSettings = {
     guide: true,
     hiddenFaces: true,
     controls: true,
-    learnMode: true,
+    learnMode: false,
   },
   recognition: {
-    hideFaces: false,
+    hideFaces: true,
   },
   timer: {},
 };
@@ -36,10 +36,10 @@ export function loadTrainerSettings(): TrainerSettings {
         guide: Boolean(parsed.resolution?.guide ?? true),
         hiddenFaces: Boolean(parsed.resolution?.hiddenFaces ?? true),
         controls: Boolean(parsed.resolution?.controls ?? true),
-        learnMode: Boolean(parsed.resolution?.learnMode ?? true),
+        learnMode: Boolean(parsed.resolution?.learnMode ?? false),
       },
       recognition: {
-        hideFaces: Boolean(parsed.recognition?.hideFaces ?? false),
+        hideFaces: Boolean(parsed.recognition?.hideFaces ?? true),
       },
       timer: {},
     };
