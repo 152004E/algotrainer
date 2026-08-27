@@ -111,11 +111,9 @@ function AlgorithmReveal({
 export default function VirtualTrainerView({
   cases,
   settings,
-  onSettingsChange,
 }: {
   cases: AlgoCase[];
   settings: TrainerSettings;
-  onSettingsChange: (s: TrainerSettings) => void;
 }) {
   const { resolution } = settings;
   const learnMode = resolution.learnMode;
@@ -141,13 +139,6 @@ export default function VirtualTrainerView({
     revealed,
     reveal,
   } = useExecutionTrainer(cases);
-
-  const updateLearnMode = (v: boolean) => {
-    onSettingsChange({
-      ...settings,
-      resolution: { ...settings.resolution, learnMode: v },
-    });
-  };
 
   return (
     <div data-exec-trainer className="w-full flex flex-col items-center gap-6">
@@ -266,27 +257,13 @@ export default function VirtualTrainerView({
             />
           )}
 
-          {/* Unified algorithm reveal + learn-mode toggle */}
-          <div className="flex flex-col gap-2 mt-2">
-            <AlgorithmReveal
-              algorithm={solution}
-              forceReveal={learnMode}
-              revealed={revealed}
-              onReveal={reveal}
-            />
-
-            <button
-              type="button"
-              onClick={() => updateLearnMode(!learnMode)}
-              className={`w-full px-6 py-3 rounded-lg border font-medium text-sm cursor-pointer transition-colors ${
-                learnMode
-                  ? "bg-primary/10 border-primary/30 text-primary/70"
-                  : "bg-primary/5 text-primary/50 border-primary/20 hover:bg-primary/10 hover:text-primary/70"
-              }`}
-            >
-              {learnMode ? "Modo aprender: ON" : "Modo aprender: OFF"}
-            </button>
-          </div>
+          {/* Unified algorithm reveal */}
+          <AlgorithmReveal
+            algorithm={solution}
+            forceReveal={learnMode}
+            revealed={revealed}
+            onReveal={reveal}
+          />
         </div>
       </div>
     </div>

@@ -6,10 +6,9 @@ import type { TrainerMode } from "./TrainerModeToggle";
 import type { TrainerSettings } from "../../hooks/useTrainerSettings";
 
 export default function TrainerPage({ cases }: { cases: AlgoCase[] }) {
-  const { mode, settings, onSettingsChange } = useOutletContext<{
+  const { mode, settings } = useOutletContext<{
     mode: TrainerMode | null;
     settings: TrainerSettings;
-    onSettingsChange: (s: TrainerSettings) => void;
   }>();
 
   if (!mode) return null;
@@ -17,10 +16,6 @@ export default function TrainerPage({ cases }: { cases: AlgoCase[] }) {
   return mode === "passive" ? (
     <PassiveTrainerView cases={cases} />
   ) : (
-    <VirtualTrainerView
-      cases={cases}
-      settings={settings}
-      onSettingsChange={onSettingsChange}
-    />
+    <VirtualTrainerView cases={cases} settings={settings} />
   );
 }
