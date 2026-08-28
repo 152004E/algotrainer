@@ -41,30 +41,34 @@ completa del código de csTimer y las fases A/B/C post-auditoría.
 ### Phase 2: Visual Polish — Week 2
 **Goal**: Professional-looking trainer with real cube visualization.
 
-- [ ] 3D Cube Viewer (integrate cubing.js or equivalent) — **reusar el twisty-player ya existente en `Components/algorithms/CubeViewer.tsx`**
-- [ ] Timer for case recognition
-- [ ] Better TrainerTabs (functional navigation, visual active state)
-- [ ] Improve TrainerSidebar stats display (progress bar, streak counter)
-- [ ] Better AlgorithmBox styling (larger font, clearer reveal state)
-- [ ] Dark mode refinements
-- [ ] Stats reales Ao5/Ao12 + timer de ejecución (no solo reconocimiento)
+- ✓ 3D Cube Viewer (cubing.js `<twisty-player>`) — drag orbital, move-press, hint facelets, guía 3D.
+- ✓ TrainerTabs funcionales (`Link` + `useLocation` con estado activo por ruta).
+- ✓ AlgorithmBox / NextCaseButton con estilos consistentes.
+- ✓ Dark mode en trainer.
+- ✓ WV trainer con dos modos (reconocimiento / resolución en cubo virtual).
+- ✓ Settings persistentes por modo (Cronómetro / Reconocimiento / Resolución).
+- ✓ Layout unificado entre modos (CTAs `PrimaryButton`/`SecondaryButton`/`SpaceHint`).
+- [ ] Timer de reconocimiento visible en sidebar (ya se mide en `useExecutionTrainer.recognitionTime`, falta mostrar)
+- [ ] Mejorar display de stats (progress bar, Ao5/Ao12/PB con valores reales)
+- [ ] Stats de ejecución visibles (executionTime ya capturado, falta UI)
 
-**Metrics**: Trainer looks polished, cube visualizer working.
+**Metrics**: Trainer looks polished, cube visualizer working, modo virtual verificable por estado.
 
 ---
 
 ### Phase 3: Features — Week 3+
 **Goal**: Extended functionality and personalization.
 
+- [x] Settings page (por modo: Cronómetro / Reconocimiento / Resolución) — persistido
 - [ ] Algorithm search / filter (practice only certain cases)
 - [ ] Weak cases mode (show failures more often)
 - [ ] Time attack mode (30 sec to solve multiple cases)
 - [ ] Statistics dashboard (success rate, avg recognition time)
 - [ ] Persistencia en localStorage (progreso, stats por trainer, casos dominados) — como csTimer
 - [ ] Keyboard shortcut config page
-- [ ] Settings page (dark mode, language, etc.)
 - [ ] Custom algorithm lists
-- [ ] Integrar `useScrambledTrainer` en los 5 trainers (scrambles dinámicos de Kociemba)
+- [ ] Migrar MW/OLL/PLL/F2L a `TrainerPage` (modos + settings + cubo virtual)
+- [ ] Tab Cronómetro funcional (timer con stats Ao5/Ao12, splits)
 
 **Metrics**: Users can personalize their training.
 
@@ -102,15 +106,16 @@ Fix routes → Populate data → useTrainer hook → Keyboard support
 | Route mapping wrong (WV→MW) | ✓ Resuelto en Phase 1 | — |
 | Data files empty | ✓ Resuelto en Phase 1 (5 datasets poblados) | — |
 | F2LTrainer not routable | ✓ Resuelto en Phase 1 (`/trainer/f2l`) | — |
-| CubeViewer is placeholder | No visualization | **MEDIUM** |
-| Keyboard shortcuts not implemented | Solo SPACE implementado (revelar/siguiente); R no | **MEDIUM** |
+| CubeViewer is placeholder | ✓ Resuelto en Phase 2 (twisty-player real con guía + hint facelets) | — |
+| Keyboard shortcuts not implemented | ✓ Resuelto en Phase 2 (SPACE: revelar/siguiente en pasivo; U/D/R/L/F/B, Shift, 2, Z en virtual) | — |
 | TrainerTabs non-functional | ✓ Resuelto en Phase 1 (Link + useLocation) | — |
 | WV scrambles vacíos (`scramble: ""`) | ✓ Resuelto: WVTrainer usa `useScrambledTrainer` con variación PLL (como OLL) | — |
-| Trainers usan scrambles estáticos (no `useScrambledTrainer`) | `scramble === algorithm` en OLL/PLL; no aprovecha Kociemba. Restan OLL/PLL/MW/F2L | **HIGH** |
+| MW/OLL/PLL/F2L sin modos ni cubo virtual | Migrar a `<TrainerPage cases={...} />` | **HIGH** |
 | `trainerStatsStore` singleton global | Stats se mezclan entre trainers | **MEDIUM** |
-| `TrainerContext.tsx` muerto + botones ?/⌨ sin función | Código muerto | **LOW** |
+| `TrainerContext.tsx` muerto | Código muerto — reemplazar | **LOW** |
 | Sin validación automática de los 188 casos | Solo OLL + WV (27) validados; MW/PLL/F2L sin chequeo | **MEDIUM** |
-| Sin persistencia en localStorage | Progreso perdido al recargar (csTimer sí persiste) | **MEDIUM** |
+| Sin persistencia de progreso en localStorage | Progreso perdido al recargar (csTimer sí persiste) | **MEDIUM** |
+| Settings: tab Cronómetro sin funcionalidad | Placeholder | **MEDIUM** |
 
 ---
 

@@ -2,13 +2,16 @@
 
 ## Estado Actual
 Rutas corregidas y datos poblados (5 datasets). Algoritmo de generación
-dinámica de scrambles validado (564/564 clean). **WV completado**: los 27
-casos diestros reales (algoritmos = strings originales de la página; el scramble
-es `invert(algorithm)` — el usuario confirmó en cubo real que las resoluciones
-son los verdaderos scrambles) reemplazaron el dataset roto, `useScrambledTrainer`
-está integrado en `WVTrainer` (scramble dinámico con variación PLL como OLL), y
-`scripts/verifyWVCases.ts` valida los 27 (165/165 checks). Pendiente: integrar
-el hook en los trainers restantes y reemplazar CubeViewer mockup.
+dinámica de scrambles validado (564/564 clean). **WV trainer base implementado**:
+los 27 casos diestros reales (algoritmos = strings originales de la página; el scramble
+es `invert(algorithm)`), `useScrambledTrainer` integrado en modo pasivo y
+`useExecutionTrainer` en modo virtual (135/135 verificación por estado), cubo
+virtual con `<twisty-player>` (drag-input auto, hint facelets, guía de notaciones),
+`SettingsModal` con tabs Cronómetro / Reconocimiento / Resolución persistido
+con versionado, layout unificado (mismo scramble + cubo + columna derecha en ambos
+modos, CTAs con `PrimaryButton`/`SpaceHint`/`SecondaryButton`). Pendiente: migrar
+MW/OLL/PLL/F2L a la base nueva (`<TrainerPage cases={...} />`), entrenar
+reconocimiento contra el cubo virtual en los demás subsets, tab Cronómetro funcional.
 
 ---
 
@@ -55,16 +58,17 @@ curadas, scrambles que generan el caso exacto, y un loop de feedback
 - [x] **Variación PLL para WV** — el bloque genérico `c.id.startsWith("oll-")` en `scrambleService.ts` ahora cubre `oll- || wv-` (22 PLLs, máx 20 movimientos) y el botón "Nuevo Scramble" en `AlgorithmCategory.tsx` funciona para ambos.
 - [x] **`scripts/verifyWVCases.ts`** (`pnpm run verify-wv`) — 165/165: 27 casos, únicos up to AUF, inverso resuelve, EO ✓, D-layer resuelta, DFR arriba, FR edge en slot, `corners` correcto.
 
-- [ ] **Reemplazar `Components/trainer/CubeViewer.tsx`**
-  - Mockup div → twisty-player real
-  - Props: `scramble: string`, `algorithm?: string`
-  - `experimentalSetupAlg = scramble`, `experimentalSetupAnchor = "start"`
+- [x] **Reemplazar `Components/trainer/CubeViewer.tsx`**
+  - Real `<twisty-player>` (`puzzle="3x3x3"`, `experimental-drag-input="auto"`, hint facelets imperativos).
+  - Guía de caras (U/D/R/L/F/B) proyectada en 3D siguiendo `orbitCoordinates`.
+  - Move-press + drag + scroll zoom. Keys: U/D/R/L/F/B, Shift, 2, Z.
+  - Verificación: `pnpm run verify-interactive-solve` = 135/135.
 
 - [x] **Actualizar `ScrambleBox.tsx`** — prop `loading: boolean` con skeleton mientras genera.
 
-- [ ] **Actualizar trainers restantes** (OLL/PLL/MW/F2L)
-  - Usar `useScrambledTrainer` en lugar de `useTrainer`
-  - Pasar `scramble` + `loading` a `ScrambleBox` y `CubeViewer`
+- [ ] **Migrar trainers restantes** (OLL/PLL/MW/F2L) a `TrainerPage`
+  - Reemplazar cuerpo del trainer por `<TrainerPage cases={...} />`.
+  - Habilita modos pasivo/virtual + settings en todos los subsets.
 
 - [ ] **Migrar AlgorithmCard + AlgorithmModal**
   - Usar scramble generado en lugar de invertir algorithm
@@ -91,33 +95,47 @@ curadas, scrambles que generan el caso exacto, y un loop de feedback
 
 ## Prioridad 2 — Lógica del Trainer
 
-- [ ] **Generador de casos aleatorios**
-  - Hook `useTrainer(cases: AlgoCase[])` que devuelve:
-    - `currentCase`, `nextCase()`, `sessionStats`
-  - Usar en cada trainer page
+- [x] **Generador de casos aleatorios**
+  - `useTrainer(cases)` y `useScrambledTrainer(cases)` — ambos funcionales.
 
-- [ ] **ScrambleBox funcional**
-  - Mostrar scramble del caso actual (del array de datos, no hardcoded)
+- [x] **ScrambleBox funcional**
+  - Muestra scramble (con skeleton `loading` mientras Kociemba genera).
 
-- [ ] **AlgorithmBox con reveal**
-  - Ocultar algoritmo por defecto
-  - Click o SPACE para revelar
-  - Estado: `hidden | revealed`
+- [x] **AlgorithmBox con reveal**
+  - Oculta por defecto; click o SPACE revela.
+  - `AlgorithmReveal` soporta `forceReveal` (Modo aprender).
 
-- [ ] **Keyboard shortcut: SPACE → Next Case**
-  - `useEffect` con `keydown` listener en TrainerLayout o cada trainer page
-  - Cuando algoritmo no revelado: revelar
-  - Cuando ya revelado: siguiente caso
+- [x] **Keyboard shortcuts (modo pasivo)**
+  - SPACE en `TrainerLayout`: si algoritmo no revelado → revela; si sí → siguiente caso.
+  - `useExecutionTrainer` añade: U/D/R/L/F/B, Shift=inverso, 2=doble, Z=retroceder.
+
+- [x] **WV trainer con cubo 3D real**
+  - `<twisty-player>` interactivo, drag orbital, move-press, hint facelets, guía 3D.
+
+- [x] **Mode toggle (pasivo ↔ virtual)**
+  - `TrainerModeToggle` persistido en `localStorage["algotrainer:trainerMode"]`.
+
+- [x] **Settings persistentes por modo**
+  - `useTrainerSettings.ts` + `SettingsModal.tsx` + `ToggleSwitch.tsx`.
+  - Reconocimiento: `hiddenFaces`, `hideFaces` (Ocultar cubo).
+  - Resolución: `guide`, `controls`, `learnMode`.
+  - Cronómetro: placeholder (sin funcionalidad).
+  - Persistido con versionado (`SETTINGS_VERSION`) → reset automático en mismatch.
+
+- [x] **Layout unificado entre modos**
+  - `PrimaryButton` (h-14, w-64 en CTAs), `SecondaryButton`, `SpaceHint`, `AlgorithmReveal`, `difficulty.ts`.
+  - Ambos modos comparten scramble + cubo + columna derecha → cambio de modo no es brusco.
 
 ---
 
 ## Prioridad 3 — CubeViewer Real
 
-- [ ] **Integrar visualizador 3D**
-  - Opción A: [`cubing.js`](https://js.cubing.net/) — biblioteca oficial, soporta twisty + diagramas
-  - Opción B: imagen estática SVG por caso (más simple, sin deps)
-  - **Recomendación: Opción A** — `cubing.js` tiene `<twisty-player>` web component, fácil integración
-  - Wrapper React: `CubeViewer.tsx` recibe `scramble: string` y renderiza el estado del cubo
+- [x] **Integrar visualizador 3D**
+  - `cubing.js` `<twisty-player>` en `Components/trainer/CubeViewer.tsx`.
+  - Drag orbital + move-press (`experimental-drag-input="auto"`).
+  - Guía de caras (overlay) que sigue la cámara (`orbitCoordinates` → face normals @ ±0.55).
+  - Hint facelets (ghost) controlado por `settings.recognition.hiddenFaces`.
+  - Move-press input + scroll zoom. Atajos teclado: U/D/R/L/F/B, Shift, 2, Z.
 
 ---
 
@@ -165,13 +183,15 @@ curadas, scrambles que generan el caso exacto, y un loop de feedback
 | `Components/Home/CTASection.tsx` | ✓ Eliminado del repo |
 | `TrainerSidebar.tsx` | ✓ Funcional — stats reales vía `trainerStatsStore` (pero Ao5/Ao12/PB con "--") |
 | `TrainerTabs.tsx` | ✓ Funcional — `Link` + `useLocation` con estado activo |
-| `TrainerToolsSidebar.tsx` | Botones ? y ⌨ sin funcionalidad |
-| `hooks/TrainerContext.tsx` | ✗ Código muerto — no lo usa nadie (se usa `trainerStatsStore`) |
-| `hooks/TrainerStatsStore.ts` | ✗ Singleton global — las stats se comparten/mezclan entre trainers |
-| `Components/trainer/CubeViewer.tsx` | ✗ Mockup CSS — ya existe un twisty-player real en `Components/algorithms/CubeViewer.tsx` sin usar |
+| `TrainerToolsSidebar.tsx` | ✓ Abre `SettingsModal` |
+| `hooks/TrainerContext.tsx` | ✗ Código muerto — no lo usa nadie (el estado vive en `TrainerLayout` Outlet context) |
+| `hooks/TrainerStatsStore.ts` | ✗ Singleton global — las stats se mezclan entre trainers |
+| `pages/trainer/{MW,OLL,PLL,F2L}Trainer.tsx` | ✗ Estructura vieja — pendiente migrar a `<TrainerPage cases={...} />` para habilitar modos + settings + cubo virtual en todos los subsets |
 | `data/WVCases.ts` | ✓ 27 casos diestros reales (algoritmos = strings de la página, verificados 27/27); `scramble: ""` es correcto porque el runtime usa `invert(algorithm)` = la resolución |
 | `data/PLLCases.ts` etc. | ⚠ `scramble === algorithm` en varios casos → aplicar el scramble 2x no resuelve; usar `invert(algorithm)` o scrambles dinámicos |
-| `useScrambledTrainer.ts` | ✓ Integrado en `WVTrainer`; los trainers OLL/PLL/MW/F2L aún usan `useTrainer` |
+| `useScrambledTrainer.ts` | ✓ Integrado en `PassiveTrainerView` (WV) |
+| `SettingsModal` (tab Cronómetro) | ✗ Placeholder — sin ajustes ni funcionalidad |
+| `CubeViewer` (Algorithms) vs (Trainer) | Hay dos componentes: `Components/algorithms/CubeViewer.tsx` (browser) y `Components/trainer/CubeViewer.tsx` (trainer, real). Refactor futuro: unificar en uno reutilizable. |
 
 ---
 
