@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-primary: #1f68f9;
+  --color-background-light: #f5f6f8;
+  --color-background-dark: #0f1623;
+  --font-display: "Inter", "system-ui", "sans-serif";
+}
+
 html {
   background-color: #fff;
 }

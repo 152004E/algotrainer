@@ -210,9 +210,53 @@ function useScrambledTrainer(cases: AlgoCase[]): {
 
 ---
 
+## TrainerSettings
+
+Ajustes del trainer por modo. Definidos en `src/hooks/useTrainerSettings.ts`,
+persistidos en `localStorage["algotrainer:trainerSettings"]` con versionado
+(`SETTINGS_VERSION`). Cuando un dato guardado tiene versión distinta, se ignora
+y se vuelven a usar los defaults.
+
+```ts
+interface TrainerSettings {
+  resolution: {
+    guide: boolean;       // letras U/D/R/L/F/B proyectadas sobre el cubo
+    controls: boolean;    // tarjeta de atajos durante la fase execute
+    learnMode: boolean;   // mostrar siempre el algoritmo (AlgorithmReveal forceReveal)
+  };
+  recognition: {
+    hiddenFaces: boolean; // hint facelets (caras no visibles como fantasma)
+    hideFaces: boolean;   // "Ocultar cubo": esconder el cubo en modo reconocimiento
+  };
+  timer: Record<string, never>; // placeholder
+}
+
+const DEFAULT_TRAINER_SETTINGS: TrainerSettings = {
+  resolution: { guide: true, controls: true, learnMode: false },
+  recognition: { hiddenFaces: true, hideFaces: false },
+  timer: {},
+};
+```
+
+---
+
+## TrainerMode
+
+Modo seleccionado por el usuario. Persistido en
+`localStorage["algotrainer:trainerMode"]`.
+
+```ts
+type TrainerMode = "passive" | "virtual";
+```
+
+- `"passive"`: reconocimiento (`PassiveTrainerView` + `useScrambledTrainer`).
+- `"virtual"`: resolución en cubo virtual (`VirtualTrainerView` + `useExecutionTrainer`).
+
+---
+
 ## Storage (localStorage)
 
-Optional persistence keys:
+Keys activas:
 
 ```ts
 interface StorageKeys {
@@ -221,8 +265,11 @@ interface StorageKeys {
     theme: 'dark' | 'light';
     language: 'es' | 'en';
   };
-  'algotrainer:sessions:[subset]': SessionStats;
-  'algotrainer:customLists': CustomList[];
+  'algotrainer:trainerMode': TrainerMode;            // "passive" | "virtual"
+  'algotrainer:trainerSettings': TrainerSettings & { version: number };
+                                                     // versionado → reset si mismatch
+  'algotrainer:sessions:[subset]': SessionStats;     // planeado (Fase C)
+  'algotrainer:customLists': CustomList[];           // planeado
 }
 
 interface CustomList {

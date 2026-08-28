@@ -22,7 +22,7 @@
   - Single generic block `if (c.id.startsWith("oll-") || c.id.startsWith("wv-"))` in scrambleService.ts
   - 57/57 OLLs + 27/27 WV validated, botón "New Scramble" en ambos
 - **WV cases**: 27 diestros reales (slot FR) — `src/data/WVCases.ts`. `algorithm` = strings originales de la página; `scramble: ""` es correcto (runtime usa `invert(algorithm)` = la resolución, confirmado por el usuario en cubo real). Verificado 27/27, EO ✓, DFR arriba, FR edge en slot, `corners` = LL orientados excluyendo la pieza DFR. Script: `pnpm run verify-wv` (165/165 checks). Zurdos → `mirrorAlgorithm()`, fase futura.
-- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL+WV PLL variation completed, WVTrainer uses `useScrambledTrainer`
+- **State**: Routes fixed, all 5 datasets populated, algorithm browser working, scramble service implemented + validated, OLL+WV PLL variation completed, WVTrainer uses `useExecutionTrainer` (ejecución interactiva en cubo virtual con verificación por estado)
 - **Language**: Spanish UI + English code
 
 ### Critical Context
@@ -46,6 +46,7 @@
    - `scripts/validateCleanScrambles.ts`: 564/564 pattern + clean (todos los subsets)
    - `scripts/validateScrambleDiversity.ts`: 100% unique OLL 33, 0 D-equivalent, seam redundancy tracking
    - 500 scrambles × 6 OLLs nuevos: 100% orientation correct, 0 redundant pairs, 0 over 20
+   - `pnpm run verify-interactive-solve` — 135/135: `useExecutionTrainer` flow (recognize → execute → feedback)
 
 4. **Reglas fijas de scramble**:
    - Solo face moves (U D R L F B + ' 2)
@@ -63,15 +64,30 @@
    - Perturbación 3-5 movimientos, solver Kociemba, simplifyMoves
    - Rejection guard + correction handling intactos
 
-6. **What exists but doesn't work**:
-   - CubeViewer (trainer): placeholder `<div>` only — sin twisty-player real
-   - Real 3D cube viewer in trainer — pendiente (igual que arriba)
-   - Scrambles dinámicos en trainers: `WVTrainer` usa `useScrambledTrainer` ✓; los trainers OLL/PLL/MW/F2L usan `useTrainer` (scrambles fijos del dataset) — pendiente integrar
-   - Keyboard shortcuts: SPACE funciona (revelar / siguiente en TrainerLayout); shortcut `R` no implementado
-   - (✓ resuelto) TrainerSidebar ya muestra stats reales (recognition time, avg, solved) vía `trainerStatsStore`
-   - (✓ resuelto) TrainerTabs ya navega con `Link` + `useLocation` (estado activo por ruta)
-   - (✓ resuelto) `pages/Trainer.tsx` fue eliminado del repo
-   - (✓ resuelto) `useTrainer` es funcional y lo usan los 5 trainers
+6. **WV trainer base (IMPLEMENTED)**:
+   - **Modos**: reconocimiento (pasivo) vs resolución en cubo virtual. Toggle persistido en `localStorage["algotrainer:trainerMode"]`.
+   - `TrainerPage` dispatchea entre `PassiveTrainerView` y `VirtualTrainerView` según `mode`.
+   - `useExecutionTrainer` maneja las fases **recognize → execute → feedback** del modo virtual, con verificación por estado vía `verifySolve.ts` (135/135).
+   - `useScrambledTrainer` sigue powering el modo pasivo (scramble dinámico por caso).
+   - **CubeViewer real** (`src/Components/trainer/CubeViewer.tsx`):
+     - `<twisty-player>` de cubing.js (`puzzle="3x3x3"`, `experimental-drag-input="auto"`).
+     - Guía de caras (U/D/R/L/F/B) proyectada en 3D que sigue la cámara (face normals @ ±0.55, orbit coords del modelo).
+     - Hint facelets (`"floating"`) para caras ocultas, asignado imperativamente a `el.hintFacelets` (reactividad del atributo no funciona tras el mount).
+     - Move-press input + drag orbital + scroll zoom. Keys: U/D/R/L/F/B, Shift=inverso, 2=doble, Z=retroceder.
+   - **Settings persistentes** (`src/hooks/useTrainerSettings.ts`):
+     - `TrainerSettings` tipado en `useTrainerSettings.ts` (ver `DATA_STRUCTURE.md`).
+     - `localStorage["algotrainer:trainerSettings"]` con versionado (`SETTINGS_VERSION`) → datos viejos se descartan al mismatch.
+     - Toggles capsule-style (`ToggleSwitch`) por modo: Reconocimiento (`hiddenFaces`, `hideFaces`=`Ocultar cubo`) y Resolución (`guide`, `controls`, `learnMode`). Cronómetro = placeholder.
+     - Guardado con toast de confirmación flotante ("¿Guardar cambios?" Sí/No).
+   - **Layout unificado**: `PrimaryButton` (`h-14`, `w-64` en CTAs standalone), `SecondaryButton`, `SpaceHint`, `AlgorithmReveal`, `difficulty.ts`. Reconocimiento y Resolución comparten scramble + cubo + columna derecha (nombre/dificultad, CTA, hint, algoritmo).
+
+7. **What exists but doesn't work / pendiente**:
+   - **Trainers restantes sin migrar**: OLL/PLL/MW/F2L siguen usando la estructura vieja (`useTrainer` + `ScrambleBox`/`CubeViewer`/`AlgorithmBox`/`NextCaseButton` directos). Solo WV usa `TrainerPage` (modos + settings). Migración: reemplazar el cuerpo del trainer por `<TrainerPage cases={...} />`.
+   - **Cubo virtual 3D en resolución**: ya interactivo en WV. Falta extender a los demás subsets.
+   - **TrainerStatsStore** sigue siendo singleton global — las stats se mezclan entre subsets (deuda técnica conocida).
+   - **Keyboard shortcut `R`**: no implementado (SPACE sí: revela o skipea en `TrainerLayout`).
+   - **Cronómetro** (settings): tab placeholder, sin funcionalidad.
+   - (✓ resuelto) `TrainerContext.tsx` ya no se usa — el estado vive en `TrainerLayout` (Outlet context) → `TrainerPage` → vistas.
 
 ### Docs to Read
 - **`SCRAMBLE_GENERATION.md`** — full spec: Kociemba composition, boundary-only, rules, validation
@@ -87,8 +103,16 @@
 |------|-------|--------|
 | Routes | App.tsx | ✓ Fixed |
 | Data | src/data/*.ts | ✓ All 5 populated |
-| Trainer pages | src/pages/trainer/ | ✓ UI done, need dynamic scrambles |
-| Trainer components | src/Components/trainer/ | ✓ UI done, CubeViewer mockup |
+| WV trainer page | src/pages/trainer/WVTrainer.tsx → `TrainerPage` | ✓ Migrado: dos modos, settings, cubo virtual |
+| Otros trainers | src/pages/trainer/{MW,OLL,PLL,F2L}Trainer.tsx | ⚠ Estructura vieja (`useTrainer` directo) — pendiente migrar a `TrainerPage` |
+| Trainer dispatch | src/Components/trainer/TrainerPage.tsx | ✓ Mux passive/virtual por modo |
+| Mode toggle | src/Components/trainer/TrainerModeToggle.tsx | ✓ Persistido en localStorage |
+| Trainer views | src/Components/trainer/{Passive,Virtual}TrainerView.tsx | ✓ Layout unificado |
+| Trainer components | src/Components/trainer/ | ✓ Reales: CubeViewer (twisty-player), ScrambleBox, FeedbackPanel, AlgorithmReveal, NextCaseButton, PrimaryButton, SecondaryButton, SpaceHint, ToggleSwitch, SettingsModal, difficulty |
+| Trainer settings | src/hooks/useTrainerSettings.ts | ✓ Tipado + versionado en localStorage |
+| Passive mode hook | src/hooks/useScrambledTrainer.ts | ✓ Integrado |
+| Virtual mode hook | src/hooks/useExecutionTrainer.ts | ✓ Integrado en WV (135/135) |
+| Cube verification | src/utils/verifySolve.ts | ✓ `pnpm run verify-interactive-solve` 135/135 |
 | Algorithm browse | src/pages/algorithms/ | ✓ Working |
 | Algorithm Card/Modal | src/Components/algorithms/ | ✓ Working, scramble via service |
 | Scramble validation | scripts/validateCleanScrambles.ts | ✓ 564/564 pass |
@@ -96,7 +120,6 @@
 | Scramble diversity | scripts/validateScrambleDiversity.ts | ✓ Implemented |
 | OLL PLL variation | src/utils/scrambleService.ts | ✓ 57/57 OLLs, all 22 PLLs |
 | New Scramble button | src/pages/algorithms/AlgorithmCategory.tsx | ✓ All 57 OLLs |
-| Dynamic trainer hook | src/hooks/useScrambledTrainer.ts | ✓ Implementado (sin integrar) |
 
 ### Code Quality Standards
 - Functional components only

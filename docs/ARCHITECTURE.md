@@ -5,12 +5,14 @@
 - **TailwindCSS v4** (via `@tailwindcss/vite`, NOT PostCSS)
 - **React Router v7**
 - **FontAwesome** (react-fontawesome for icons)
-- **cubing.js** — `cubing/puzzles`, `cubing/kpuzzle`, `cubing/search`, `cubing/alg`
+- **Material Symbols** (Google icon font) en trainer (cube + algorithm reveal)
+- **cubing.js** — `cubing/puzzles`, `cubing/kpuzzle`, `cubing/search`, `cubing/alg`, `cubing/twisty`
   - 3x3x3 interactive cube in Hero
+  - `<twisty-player>` web component en trainer (rotación libre, move-press, hint facelets)
   - KPattern + KTransformation for cube state
   - `experimentalSolve3x3x3IgnoringCenters` (min2phase/Kociemba) for scramble generation
   - `Alg` for invert/normalize
-- **No state management library** — local state + props; mini store pub/sub `trainerStatsStore` (`src/hooks/TrainerStatsStore.ts`) + `TrainerContext` para stats del trainer
+- **No state management library** — local state + props; mini store pub/sub `trainerStatsStore` (`src/hooks/TrainerStatsStore.ts`); settings persistidos con `localStorage` versionado (`src/hooks/useTrainerSettings.ts`)
 
 ## Directory Structure
 
@@ -62,23 +64,35 @@ src/
 │   │   ├── Hero.tsx             Hero section with CTA (uses CubeHero)
 │   │   ├── AlgorithmSection.tsx Grid of algorithm sets
 │   │   ├── AlgorithmCard.tsx    Card linking to trainer
-│   │   └── HowItWorks.tsx       3-step process section
+│   │   └── HowItWorks.tsx        3-step process section
 │   │
 │   ├── trainer/
-│   │   ├── TrainerSidebar.tsx   Left sidebar: session stats [PLACEHOLDER]
-│   │   ├── TrainerTabs.tsx      Top tabs: F2L / WV / MW / OLL / PLL [NON-FUNCTIONAL]
-│   │   ├── TrainerToolsSidebar.tsx Right sidebar: help & shortcuts [PLACEHOLDER]
-│   │   ├── CubeViewer.tsx       [PLACEHOLDER - will show twisty-player with scramble]
-│   │   ├── ScrambleBox.tsx      Displays scramble string (accepts loading prop)
-│   │   ├── AlgorithmBox.tsx     Displays algorithm string
-│   │   └── NextCaseButton.tsx   Next case button
+│   │   ├── TrainerPage.tsx        Dispatcher passive/virtual según modo (Outlet context)
+│   │   ├── TrainerSidebar.tsx     Left sidebar: session stats reales (trainerStatsStore)
+│   │   ├── TrainerTabs.tsx        Top tabs: F2L / WV / MW / OLL / PLL — Link + useLocation
+│   │   ├── TrainerToolsSidebar.tsx Right sidebar: atajo a SettingsModal
+│   │   ├── TrainerModeToggle.tsx  Switch reconocimiento / resolución (persistido)
+│   │   ├── PassiveTrainerView.tsx Modo reconocimiento (scramble + cubo + reveal + next)
+│   │   ├── VirtualTrainerView.tsx  Modo resolución (cubo virtual + execute + feedback)
+│   │   ├── CubeViewer.tsx          <twisty-player>: guía 3D, hint facelets, move-press
+│   │   ├── ScrambleBox.tsx         Muestra scramble (con skeleton `loading`)
+│   │   ├── AlgorithmBox.tsx        Reveal del algoritmo (botón / display)
+│   │   ├── AlgorithmReveal.tsx     Wrapper de AlgorithmBox con `forceReveal` (Modo aprender)
+│   │   ├── NextCaseButton.tsx      "Siguiente caso" + hint Space (PrimaryButton + SpaceHint)
+│   │   ├── FeedbackPanel.tsx       Feedback de resolución (verdict, movimientos, Repetir/Siguiente)
+│   │   ├── PrimaryButton.tsx       CTA estándar (h-14, soporta kbd shortcut)
+│   │   ├── SecondaryButton.tsx     Acción secundaria (Deshacer/Limpiar/Repetir)
+│   │   ├── SpaceHint.tsx           Hint "Space ..." con kbd consistente
+│   │   ├── ToggleSwitch.tsx        Switch cápsula para ajustes
+│   │   ├── SettingsModal.tsx       Modal de ajustes (Cronómetro / Reconocimiento / Resolución)
+│   │   └── difficulty.ts           difficulty → color (Easy/Medium/Hard) compartido
 │   │
 │   ├── algorithms/
-│   │   ├── AlgorithmCard.tsx    Algorithm browse card (shows mezcla + solución)
+│   │   ├── AlgorithmCard.tsx     Algorithm browse card (shows mezcla + solución)
 │   │   ├── AlgorithmCategoryCard.tsx  Card de categoría en /algorithms
-│   │   ├── AlgorithmFilter.tsx  Filtros de búsqueda (dificultad, shape, etc.)
-│   │   ├── AlgorithmModal.tsx   Detail modal with cube viewer + variants
-│   │   ├── CubeViewer.tsx       cubing.js twisty-player wrapper with controls
+│   │   ├── AlgorithmFilter.tsx   Filtros de búsqueda (dificultad, shape, etc.)
+│   │   ├── AlgorithmModal.tsx    Detail modal with cube viewer + variants
+│   │   ├── CubeViewer.tsx        cubing.js twisty-player wrapper with controls
 │   │   └── CubeAlgorithmViewer.tsx Viewer de algoritmo con controles
 │   │
 │   └── Modals/
@@ -87,13 +101,16 @@ src/
 ├── utils/
 │   ├── scrambleService.ts      Dynamic scramble generation (Kociemba composition)
 │   ├── resolveVariants.ts      Algorithm variant resolution
-│   └── mirrorAlgorithm.ts      Mirror transformation for ergonomic pairs
+│   ├── mirrorAlgorithm.ts      Mirror transformation for ergonomic pairs
+│   └── verifySolve.ts          State-comparison solve verification (AUF-tolerant)
 │
 ├── hooks/
-│   ├── useTrainer.ts           Trainer logic (fixed scrambles) — usado por los 5 trainers
-│   ├── useScrambledTrainer.ts  Trainer with dynamic scrambles (implementado, sin integrar)
-│   ├── TrainerContext.tsx      Context para stats del trainer
-│   └── TrainerStatsStore.ts    Mini store pub/sub (stats compartidas sidebar ↔ hooks)
+│   ├── useTrainer.ts             Trainer logic (scrambles fijos) — usado por OLL/PLL/MW/F2L
+│   ├── useScrambledTrainer.ts    Trainer con scrambles dinámicos (Kociemba) — passive mode
+│   ├── useExecutionTrainer.ts    Hook del modo virtual (recognize/execute/feedback) — WV
+│   ├── useTrainerSettings.ts     Settings tipados + localStorage versionado
+│   ├── TrainerStatsStore.ts      Mini store pub/sub (stats compartidas sidebar ↔ hooks)
+│   └── TrainerContext.tsx        [LEGACY] código muerto — reemplazado por Outlet context
 │
 └── data/
     ├── algorithmCatalog.ts     Metadatos de categorías (slug, iconos, filtros)
@@ -133,31 +150,60 @@ All imports in `src/App.tsx` have been corrected to use lowercase `./pages/...` 
 
 ## Data Flow
 
-### Phase 1 (Hardcoded scrambles)
+### WV Trainer Base (Phase 4 — implementado)
+
 ```
-Trainer Page
-  ├─ ScrambleBox(scramble: "R U R' U'")  [static string]
-  ├─ CubeViewer()                         [placeholder div]
-  ├─ AlgorithmBox(algorithm: "...")       [static string]
-  └─ NextCaseButton(onNext: () => {})     [logs to console]
+TrainerLayout
+  ├─ mode (localStorage["algotrainer:trainerMode"])        [passive | virtual]
+  ├─ settings (localStorage["algotrainer:trainerSettings"]) [versioned]
+  └─ Outlet context → { mode, settings, onSettingsChange }
+
+TrainerPage (TrainerPage.tsx)
+  └─ mode === "passive"
+       └─ PassiveTrainerView(cases, settings)
+            ├─ useScrambledTrainer(cases) → currentCase, loading, scramble
+            ├─ ScrambleBox(scramble, loading)
+            ├─ CubeViewer(scramble, guide, hintFacelets)
+            ├─ NextCaseButton(onNext) → PrimaryButton + SpaceHint
+            └─ AlgorithmReveal(algorithm, revealed, onReveal)
+  └─ mode === "virtual"
+       └─ VirtualTrainerView(cases, settings)
+            ├─ useExecutionTrainer(cases) → phases recognize/execute/feedback
+            ├─ ScrambleBox
+            ├─ CubeViewer(scramble, interactive, guide, hintFacelets, ref)
+            ├─ Phase recognize: name/diff + "Lo sé — Ejecutar" + SpaceHint
+            ├─ Phase execute:   ControlsCard + userMoves + Deshacer/Limpiar + Comprobar
+            ├─ Phase feedback:  FeedbackPanel (Repetir / Siguiente caso)
+            └─ AlgorithmReveal(solution, revealed, onReveal)
 ```
 
-### Phase 2 (Dynamic with single scramble)
+### CubeViewer (trainer)
 ```
-useTrainer(cases: AlgoCase[])
-  ├─ currentCase: AlgoCase
-  ├─ nextCase(): void
-  └─ sessionStats: SessionStats
+<twisty-player>
+  experimental-drag-input="auto"     // orbit + move-press simultáneos
+  experimental-setup-anchor="start"
+  experimental-hint-facelets={hintFacelets}   // atributo (no reactivo tras mount)
+  ref={playerRef}
+  imperative: el.hintFacelets = "floating"     // via useEffect (reactividad)
 
-Trainer Page
-  ├─ ScrambleBox(scramble: currentCase.scramble)
-  ├─ CubeViewer(scramble: currentCase.scramble)
-  ├─ AlgorithmBox(algorithm: currentCase.algorithm, revealed: bool)
-  ├─ NextCaseButton(onNext: nextCase)
-  └─ TrainerSidebar(stats: sessionStats)
+FaceLabel overlay (solo si guide=true)
+  ├─ INITIAL_FACE_POSITIONS = computeFacePositions(DEFAULT_ORBIT)   // sync on mount
+  └─ addFreshListener(orbitCoordinates, ...) → setFacePositions     // rotación
 ```
 
-### Phase 3 (Dynamic scramble generation — implemented)
+### Mode toggle + Settings
+```
+TrainerSidebar → onOpenSettings → SettingsModal
+TrainerLayout SPACE handler
+  ├─ [data-exec-trainer] presente? → no-op (useExecutionTrainer maneja)
+  └─ si no: revelado? → [data-reveal-algo].click() : [data-next-case].click()
+
+localStorage["algotrainer:trainerSettings"]
+  └─ { version: SETTINGS_VERSION, resolution: {...}, recognition: {...} }
+     └─ load: si version mismatch → DEFAULT_TRAINER_SETTINGS (reset)
+```
+
+### Scramble generation (existente)
 ```
 ScrambleService (singleton)
   └─ generateScramble(caseData) → string
@@ -167,13 +213,6 @@ ScrambleService (singleton)
       └─ solveMin2Phase(target.applyAlg(pert)) → invert → solvedToPerturbed
       └─ scramble = simplifyMoves([solvedToPerturbed, invert(pert)].join(" "))
 
-AlgorithmCategory (for all 57 OLLs + 27 WV)
-  ├─ dynamicScramble: string | undefined
-  ├─ handleNewScramble: () => void       [activado si isPLLVariation(id) = oll- || wv-]
-  └─ AlgorithmModal(dynamicScramble, onNewScramble)
-    ├─ CubeViewer(setupAlg)               [twisty-player with scramble]
-    └─ Button "Nuevo Scramble"            [visible en todos los OLLs]
-
 useScrambledTrainer(cases: AlgoCase[])
   ├─ currentCase: AlgoCase
   ├─ scramble: string                    [generated fresh each time]
@@ -182,6 +221,14 @@ useScrambledTrainer(cases: AlgoCase[])
   ├─ nextCase(): void
   ├─ revealAlgorithm(): void
   └─ stats: SessionStats
+
+useExecutionTrainer(cases: AlgoCase[])
+  ├─ currentCase, scramble, solution, loading
+  ├─ phase: "recognize" | "execute" | "feedback"
+  ├─ userMoves, cubeRef, undoMove, clearMoves, syncMoves
+  ├─ startExecution, check (verifySolve → verdict), verdict, executionTime, recognitionTime
+  ├─ repeatCase, nextCase
+  └─ revealed, reveal
 ```
 
 ## Component Hierarchy
@@ -201,14 +248,24 @@ App
 │     └─ AlgorithmSection
 │
 └─ TrainerLayout
-   ├─ TrainerSidebar
+   ├─ TrainerSidebar (stats reales + botón Settings → SettingsModal)
    ├─ TrainerTabs
-   ├─ XxxTrainer (WV/MW/OLL/PLL/F2L)
-   │  ├─ ScrambleBox
-   │  ├─ CubeViewer
-   │  ├─ AlgorithmBox
-   │  └─ NextCaseButton
-   └─ TrainerToolsSidebar
+   ├─ TrainerModeToggle  (selector modo reconocimiento / resolución)
+   └─ Outlet
+      └─ WVTrainer → TrainerPage
+         ├─ PassiveTrainerView
+         │  ├─ ScrambleBox
+         │  ├─ CubeViewer (twisty-player, hint facelets)
+         │  ├─ NextCaseButton (PrimaryButton + SpaceHint)
+         │  └─ AlgorithmReveal (AlgorithmBox)
+         └─ VirtualTrainerView
+            ├─ ScrambleBox
+            ├─ CubeViewer (twisty-player, interactive)
+            ├─ Contenido por fase
+            │  ├─ recognize: PrimaryButton + SpaceHint
+            │  ├─ execute:   ControlsCard + SecondaryButtons + PrimaryButton
+            │  └─ feedback:  FeedbackPanel (SecondaryButton + PrimaryButton)
+            └─ AlgorithmReveal
 ```
 
 ## Styling
